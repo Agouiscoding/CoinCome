@@ -4,8 +4,8 @@ spring:
   datasource:
     # 重点：这里连的是本地 3307 端口（SSH 隧道），不是远程内网 IP
     url: jdbc:mysql://localhost:3307/bitcome?useSSL=false&serverTimezone=UTC
-    username: agou              # 你的 MySQL 用户
-    password: Aa121543912gzq!  # 你的 MySQL 密码
+    username: yixin_leng              # 你的 MySQL 用户
+    password: YxLeng%2025^Lm3  # 你的 MySQL 密码
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # 文件上传设置（给 CSV 用）

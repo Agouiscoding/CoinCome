@@ -1,5 +1,6 @@
 package com.nyu.coincome.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -10,13 +11,21 @@ import java.sql.Timestamp;
 @TableName("Users")
 public class Users {
 
-    @TableId
-    private Integer UserID;          // 主键
+    @TableId("UserID")
+    private Integer userId;        // 主键
 
-    private String Username;         // 用户名（唯一）
-    private String Email;            // 用户 email（唯一）
-    private String PasswordHash;     // 加密后的密码
+    @TableField("Username")
+    private String username;       // 用户名
 
-    private Timestamp CreatedAt;     // 创建时间
-    private Timestamp UpdatedAt;     // 更新时间
+    @TableField("Email")
+    private String email;          // 邮箱
+
+    @TableField("PasswordHash")
+    private String passwordHash;   // 密码哈希
+
+    @TableField("CreatedAt")
+    private Timestamp createdAt;   // 创建时间
+
+    @TableField("UpdatedAt")
+    private Timestamp updatedAt;   // 更新时间
 }
