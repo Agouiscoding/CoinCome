@@ -39,16 +39,43 @@
 
     <!-- 🟪 上传 & 我的资产 -->
     <section class="upload-asset">
-      <div class="upload-card card">
-        <div class="icon">⬆</div>
-        <div class="label">Transaction Upload</div>
+      <div class="upload-card" @click="goUploadPage">
+        <img src="/upload.png" class="upload-icon" />
+        <p class="upload-text">Upload Transactions</p>
       </div>
 
-      <div class="asset-card card">
-        <h3>My Asset</h3>
-        <div class="list-placeholder"></div>
+      <div class="asset-card" @click="goPortfolio">
+        <!-- 左：文字列 -->
+        <div class="asset-col asset-info">
+          <div class="asset-title">My Asset</div>
+          <div class="asset-stats">
+            <div class="row">
+              <span>Total Value</span>
+              <span class="value">\${{ totalValue }}</span>
+            </div>
+            <div class="row">
+              <span>Total Return</span>
+              <span class="pnl green">{{ returnPct }}%</span>
+            </div>
+            <div class="row">
+              <span>Coins</span>
+              <span>{{ coinCount }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- 中：第一个图占位 -->
+        <div class="asset-col">
+          <div class="asset-circle"></div>
+        </div>
+        <!-- 右：第二个图 + 按钮 -->
+        <div class="asset-col asset-right">
+          <div class="asset-circle small-circle"></div>
+          <div class="view-more">View Portfolio →</div>
+        </div>
       </div>
+
     </section>
+    
 
     <!-- 🟩 热门币种列表 -->
     <section class="currency-list card">
@@ -98,6 +125,10 @@ import axios from 'axios'
 const userStore = useUserStore()
 const router = useRouter()
 const result = ref(null)
+const fileInput = ref(null)
+const totalValue = ref(0)
+const returnPct = ref(0)
+const coinCount = ref(0)
 
 // 退出登录
 function handleLogout() {
@@ -117,6 +148,18 @@ function handleLogout() {
 //     result.value = '请求失败，看控制台'
 //   }
 // }
+
+//文件上传页面跳转
+function goUploadPage() {
+  router.push("/upload")
+}
+
+//my asset页面跳转
+function goPortfolio() {
+  router.push("/portfolio")
+}
+
+
 </script>
 
 <style scoped>
@@ -198,13 +241,127 @@ function handleLogout() {
   flex: 1;
 }
 
-.upload-card {
-  text-align: center;
+.asset-card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 40px;
+  flex: 1;
+
+  display: flex;
+  justify-content: center;   /* ✨ 三列整体居中 */
+  align-items: center;
+  gap: 48px;                 /* ✨ 三列之间的间距 */
+
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  cursor: pointer;
 }
 
-.icon {
-  font-size: 40px;
-  margin-bottom: 10px;
+/* 每一列的公共样式 */
+.asset-col {
+  flex: 0 0 auto;
+  margin-right: 80px;
+}
+
+/* 左边文字列 */
+.asset-info {
+  min-width: 220px;
+}
+
+.asset-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.asset-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+}
+
+.value {
+  font-weight: 600;
+}
+
+.green { color: #10b981; font-weight: 600; }
+
+/* 两个圆形占位图 */
+.asset-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #f3f4f6;
+}
+
+.small-circle {
+  width: 72px;
+  height: 72px;
+}
+
+/* 右侧一列：竖排对齐圆 + 按钮 */
+.asset-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.view-more {
+  font-size: 14px;
+  color: #3f7df3;
+  font-weight: 600;
+}
+
+/* ===== 上传卡片美化 ===== */
+.upload-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 28%; /* 左边占 28% */
+
+  cursor: pointer;
+  transition: 0.25s ease;
+  border: 1px solid #e6e6e6;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.upload-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* 上传图标 */
+.upload-icon {
+  width: 70px;
+  height: 70px;
+  opacity: 0.85;
+  margin-bottom: 15px;
+  transition: 0.25s ease;
+}
+
+.upload-card:hover .upload-icon {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* 上传文字 */
+.upload-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 10px;
+  letter-spacing: 0.3px;
 }
 
 .asset-card h3 {
