@@ -9,8 +9,8 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface ImportBatchMapper extends BaseMapper<ImportBatch> {
     //查询相同SHA256
-    @Select("SELECT COUNT(*) FROM ImportBatch WHERE FileChecksumSHA256 = #{checksum}")
-    int countByChecksum(String checksum);
+    @Select("SELECT COUNT(*) FROM ImportBatch WHERE FileChecksumSHA256 = #{checksum} AND UserId = #{userId}")
+    int countByChecksum(String checksum, Integer userId);
 
     //批量插入TradeRaw
     void loadTradeRawFromCsv(@Param("filePath") String filePath,

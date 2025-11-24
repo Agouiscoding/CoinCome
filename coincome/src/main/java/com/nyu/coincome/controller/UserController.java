@@ -162,9 +162,9 @@ public class UserController {
             log.info("Upload file checksum = {}", checksum);
 
             // 5. 查数据库是否重复
-            int count = importBatchMapper.countByChecksum(checksum);
+            int count = importBatchMapper.countByChecksum(checksum,userId);
             if (count > 0) {
-                return Result.error("Duplicate file: this file has been uploaded before.");
+                return Result.error("Duplicate file: this file has been uploaded before,please contact support if you think this is an error.");
             }
 
             // 6. 获取 uploads 目录路径
