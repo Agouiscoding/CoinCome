@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.nyu.coincome.mapper.ImportBatchMapper">
+    <update id="resetRowNum">
+        SET @rownum := 0
+    </update>
+
+    <update id="loadTradeRawFromCsv">
+        LOAD DATA LOCAL INFILE #{filePath}
+        INTO TABLE TradeRaw
+        FIELDS TERMINATED BY ','
+        ENCLOSED BY '"'
+        LINES TERMINATED BY '\n'
+        IGNORE 1 LINES
+        (@tx_time, @tx_type, @symbol, @quantity, @price,
+        @external_trade_id, @fee_amount, @fee_symbol, @note)
+        SET
+        BatchID = #{batchId},
+        RowNum = (@rownum := @rownum + 1),
+        RawPayload = JSON_OBJECT(
+        'tx_time', @tx_time,
+        'tx_type', @tx_type,
+        'symbol', @symbol,
+        'quantity', CAST(@quantity AS DECIMAL(38, 18)),
+        'price', CAST(@price AS DECIMAL(28,10)),
+        'external_trade_id', @external_trade_id,
+        'fee_amount', CAST(@fee_amount AS DECIMAL(28,10)),
+        'fee_symbol', @fee_symbol,
+        'note', @note
+        ),
+        Status = 'NEW';
+    </update>
+
+    <insert id="insertParsedTransactions">
+        INSERT INTO TransactionRecord
+        (UserID, ExchangeID, CoinID, TxType, Quantity, Price, TxTime, UpdatedAt)
+        SELECT
+            ib.UserID,
+            ib.ExchangeID,
+            c.CoinID,
+            JSON_UNQUOTE(JSON_EXTRACT(tr.RawPayload, '$.tx_type')),
+            JSON_EXTRACT(tr.RawPayload, '$.quantity'),
+            JSON_EXTRACT(tr.RawPayload, '$.price'),
+            JSON_UNQUOTE(JSON_EXTRACT(tr.RawPayload, '$.tx_time')),
+            CURRENT_TIMESTAMP
+        FROM TradeRaw tr
+                 JOIN ImportBatch ib ON ib.BatchID = tr.BatchID
+                 JOIN Coin c
+                      ON c.CoinName = JSON_UNQUOTE(JSON_EXTRACT(tr.RawPayload,'$.symbol'))
+        WHERE tr.BatchID = #{batchId}
+          AND tr.Status IN ('NEW','ERROR')
+        ORDER BY
+            CAST(JSON_UNQUOTE(JSON_EXTRACT(tr.RawPayload,'$.tx_time')) AS DATETIME),
+            tr.RowNum,
+            tr.RawID;
+    </insert>
+
+    <select id="callRefreshUserCoinAgg" parameterType="int">
+        CALL sp_refresh_user_coin_agg(#{userId});
+    </select>
+
+</mapper>

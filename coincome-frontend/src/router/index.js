@@ -4,6 +4,7 @@ import SignIn from '@/views/SignIn.vue'
 import GoogleCallback from '@/views/GoogleCallback.vue'
 import HomeAfter from '@/views/HomeAfter.vue'
 import Signup from '@/views/Signup.vue'
+import Upload from '@/views/upload.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,7 +38,12 @@ const router = createRouter({
       path: '/dashboard', 
       name: 'dashboard',
       component: () => import('@/components/dashboard/DashboardView.vue')
-    }
+    },
+    {
+      path: '/upload',
+      name: 'upload',
+      component: Upload
+    },
   ],
 })
 
