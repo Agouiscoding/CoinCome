@@ -1,13 +1,13 @@
 <template>
   <div class="table-card custom-table-card">
     <!-- toolbar -->
-    <div class="table-toolbar">
+    <!-- <div class="table-toolbar">
       <div class="toolbar-title">Crypto Price</div>
       <div class="toolbar-search">
         <span class="search-icon">🔍</span>
         <input class="search-input" type="text" v-model="search" placeholder="Search" />
       </div>
-    </div>
+    </div> -->
     <!-- table -->
     <table class="crypto-table">
       <thead>
@@ -168,101 +168,168 @@ export default {
   box-sizing: border-box;
 }
 
+/* 整个表格骨架 */
 .crypto-table {
-  background: transparent;
-  border-radius: 16px;
-  overflow: hidden;
-}
-.crypto-table th {
-  color: #888;
-  font-weight: 700;
-  font-size: 16px;
-  background: transparent;
-  border: none;
-  padding-bottom: 12px;
-  letter-spacing: 0.2px;
-}
-.crypto-table td {
-  background: #fff;
-  border: none;
-  font-size: 17px;
-  padding: 18px 8px;
-  vertical-align: middle;
-  transition: background 0.2s;
-}
-.crypto-table tbody tr {
-  box-shadow: 0 2px 8px 0 rgba(60,60,60,0.04);
-  border-radius: 12px;
-  transition: box-shadow 0.2s, background 0.2s;
-  background: #fff;
-}
-.crypto-table tbody tr:hover {
-  box-shadow: 0 4px 16px 0 rgba(60,60,60,0.10);
-  background: #f7faff;
+  width: 100%;
+  border-collapse: collapse;    /* 真正紧凑表格 */
+  border-spacing: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
 }
 
+
+/* 表头 */
+.crypto-table thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  padding: 0 12px 10px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+
+/* 单元格 */
+.crypto-table tbody td {
+  font-size: 14px;
+  color: #0f172a;
+  padding: 10px 12px;
+  height: 48px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  background: transparent;
+}
+
+
+
+/* 最后一行可去掉底边线（可选） */
+.crypto-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* 行 hover：轻量背景高亮 */
+.crypto-table tbody tr:hover td {
+  background: rgba(129, 140, 248, 0.06);
+}
+
+
+/* 左中右对齐工具类 */
+.left   { text-align: left; }
+.right  { text-align: right; }
+.center { text-align: center; }
+
+
+/* 星标列 + 序号列 */
+.star-header,
+.star-cell {
+  width: 36px;
+  text-align: center;
+}
+
+.index-header,
+.index-cell {
+  width: 40px;
+  text-align: right;
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* 星标 icon */
+.star {
+  font-size: 16px;
+  color: #cbd5f5;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.star.active {
+  color: #fbbf24;
+}
+
+
+/* Token 名称部分 */
 .name-cell {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-width: 160px;
+  gap: 10px;
+  min-width: 200px;
 }
+
 .icon-wrap {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
-  border-radius: 50%;
 }
+
 .icon {
-  width: 48px;
-  height: 48px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: contain;
-  width: 40px;
-  height: 40px;
 }
+
 .name-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
+
 .name {
-  font-weight: bold;
-  font-size: 17px;
-  color: #222;
-  word-break: break-all;
-}
-.symbol {
   font-size: 14px;
-  color: #aaa;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.symbol {
+  font-size: 12px;
+  color: #9ca3af;
   margin-top: 2px;
 }
+
+
+
+/* 数值列：价格 / 涨跌 / 交易量 / 市值 */
 .price {
-  font-family: 'Menlo', monospace;
-  font-weight: 600;
-  color: #222;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
 }
+
+.change {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.change.up {
+  color: #16a34a;
+}
+
+.change.down {
+  color: #dc2626;
+}
+
+/* 小图表（如果要保留的话） */
 .chart {
-  width: 70px;
+  width: 72px;
   height: 24px;
   display: block;
   margin: 0 auto;
   border-radius: 4px;
-  background: #f5f5f5;
+  background: #f3f4f6;
 }
-.change {
-  font-weight: bold;
-  font-size: 15px;
-  padding: 4px 12px;
-  border-radius: 8px;
-  display: inline-block;
-  background: #f5f5f5;
-}
-.up {
+
+
+/* .up {
   color: #16c784;
   background: #e6f9f0;
 }
@@ -299,65 +366,37 @@ export default {
 .star.active {
   color: #f7b500;
   text-shadow: 0 1px 4px #ffe06644;
-}
+} */
 
-/* 响应式 */
+/* 响应式简单压缩 */
 @media (max-width: 600px) {
-  .custom-table-card {
-    padding: 12px 2vw 12px 2vw;
-    min-width: 0;
-    max-width: 100vw;
+  .crypto-table thead th {
+    font-size: 11px;
+    padding: 0 6px 8px 6px;
   }
-  .crypto-table th, .crypto-table td {
+
+  .crypto-table tbody td {
     font-size: 13px;
-    padding: 8px 2px;
+    padding: 8px 6px;
   }
+
+  .name-cell {
+    gap: 8px;
+  }
+
   .icon-wrap {
-    width: 28px;
-    height: 28px;
-  }
-  .icon {
     width: 24px;
     height: 24px;
   }
-  .chart {
-    width: 40px;
-    height: 14px;
-  }
-}
-.table-card {
-  width: 100%;
-  max-width: 900px;
-  min-width: 320px;
-  margin: 48px auto 0 auto;
-  background: #fff;
-  border-radius: 24px;
-  padding: 48px 48px 32px 48px;
-  margin: 56px auto 0 auto;
-  max-width: 1100px;
-  min-width: 340px;
-  flex-direction: column;
-  align-items: stretch;
-  box-sizing: border-box;
-}
 
-@media (max-width: 600px) {
-  .table-card {
-    padding: 12px 2vw 12px 2vw;
-    min-width: 0;
-    max-width: 100vw;
-  }
-  .crypto-table th, .crypto-table td {
-    font-size: 13px;
-    padding: 8px 2px;
-  }
   .icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
+
   .chart {
-    width: 40px;
-    height: 14px;
+    width: 56px;
+    height: 20px;
   }
 }
 

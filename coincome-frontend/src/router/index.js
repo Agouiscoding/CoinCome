@@ -6,7 +6,7 @@ import HomeAfter from '@/compo/HomeAfter.vue'
 import Signup from '@/compo/Signup.vue'
 import Upload from '@/compo/upload.vue'
 import Landing from '@/components/Landing/Landing.vue'
-import SigninForm from '@/components/LoginView/SigninForm.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,9 +47,9 @@ const router = createRouter({
       component: Upload
     },
     // {
-    //   path: '/landing',
-    //   name: 'landing',
-    //   component: Home
+    //   path: '/test',
+    //   name: 'SignupForm',
+    //   component: SignupForm
     // },
   ],
 })

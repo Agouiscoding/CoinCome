@@ -1,13 +1,12 @@
 <script setup>
-import Header from './Header/Header.vue'
+import LandingLayout from '@/components/Landing/LandingLayout.vue'
 import DisplayTable from './DisplayTable/DisplayTable.vue'
 </script>
 
 <template>
-  <div>
-    <Header />
+  <LandingLayout>
     <DisplayTable />
-  </div>
+  </LandingLayout>
 </template>
 
 <style scoped>
