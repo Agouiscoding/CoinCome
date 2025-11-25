@@ -1,11 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/compo/Home.vue'
-import SignIn from '@/compo/SignIn.vue'
-import GoogleCallback from '@/compo/GoogleCallback.vue'
+import Dashboard from '@/views/Dashboard/Dashboard.vue'
+import GoogleCallback from '@/views/GoogleCallBack/GoogleCallBack.vue'
 import HomeAfter from '@/compo/HomeAfter.vue'
-import Signup from '@/compo/Signup.vue'
 import Upload from '@/compo/upload.vue'
-import Landing from '@/components/Landing/Landing.vue'
+import Landing from '@/views/Landing/Landing.vue'
+import Market from '@/views/Market/Market.vue'
 
 
 const router = createRouter({
@@ -17,9 +16,9 @@ const router = createRouter({
       component: Landing
     },
     {
-      path: '/signin',
-      name: 'signin',
-      component: SignIn
+      path: '/dashboard',
+      name: 'dashboard',
+      component: Dashboard
     },
     {
       path: '/auth/google/callback',
@@ -32,25 +31,15 @@ const router = createRouter({
       component: HomeAfter
     },
     {
-      path: '/signup',
-      name: 'signup',
-      component: Signup
-    },
-    {
-      path: '/dashboard', 
-      name: 'dashboard',
-      component: () => import('@/components/dashboard/DashboardView.vue')
+      path: '/market',
+      name: 'market',
+      component: Market
     },
     {
       path: '/upload',
       name: 'upload',
       component: Upload
     },
-    // {
-    //   path: '/test',
-    //   name: 'SignupForm',
-    //   component: SignupForm
-    // },
   ],
 })
 

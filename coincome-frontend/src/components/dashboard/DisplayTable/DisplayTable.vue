@@ -1,27 +1,50 @@
 <template>
-  <div class="table-card custom-table-card">
-    <!-- toolbar -->
-    <!-- <div class="table-toolbar">
-      <div class="toolbar-title">Crypto Price</div>
-      <div class="toolbar-search">
-        <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" v-model="search" placeholder="Search" />
+  <div class="explore-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1 class="hero-title">Explore the ecosystem</h1>
+      <p class="hero-subtitle">Discover tokens on Solana & beyond</p>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <div class="search-box">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <input
+            type="text"
+            v-model="search"
+            placeholder="Search"
+            class="search-input"
+          />
+        </div>
       </div>
-    </div> -->
-    <!-- table -->
-    <table class="crypto-table">
+    </div>
+
+    <!-- Market Overview Section -->
+    <div class="market-section">
+      <div class="section-header">
+        <svg class="section-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" fill="#10b981"/>
+        </svg>
+        <h2 class="section-title">Market Overview</h2>
+      </div>
+
+      <!-- table -->
+      <table class="crypto-table">
       <thead>
         <tr>
           <th class="star-header"></th>
           <th class="index-header">#</th>
-          <th class="left">Name</th>
+          <th class="left">Token</th>
           <th class="right">Price</th>
-          <th class="center">Price Graph</th>
           <th class="right">24h Change</th>
+          <th class="right">24h Volume</th>
+          <th class="right">Market Cap</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(coin, idx) in filteredCoins" :key="coin.symbol">
+        <tr v-for="(coin, idx) in filteredCoins" :key="coin.symbol" class="table-row">
           <td class="star-cell">
             <span
               class="star"
@@ -34,33 +57,34 @@
           </td>
           <td class="index-cell">{{ idx + 1 }}</td>
           <td class="name-cell">
-            <div class="icon-wrap">
-              <img
-                :src="coin.icon"
-                :alt="coin.name"
-                class="icon"
-                @error="onImgError($event)"
-              />
-            </div>
-            <div class="name-info">
-              <span class="name">{{ coin.name }}</span>
-              <span class="symbol">· {{ coin.symbol }}</span>
+            <div class="token-content">
+              <div class="icon-wrap">
+                <img
+                  :src="coin.icon"
+                  :alt="coin.name"
+                  class="icon"
+                  @error="onImgError($event)"
+                />
+              </div>
+              <div class="name-info">
+                <span class="name">{{ coin.name }}</span>
+                <span class="symbol">{{ coin.symbol }}</span>
+              </div>
             </div>
           </td>
           <td class="right price">{{ coin.price }}</td>
-          <td class="center">
-            <img :src="coin.chart" alt="chart" class="chart" />
-          </td>
           <td class="right">
             <span :class="['change', coin.change > 0 ? 'up' : coin.change < 0 ? 'down' : '']">
-              <span v-if="coin.change > 0">↑</span>
-              <span v-else-if="coin.change < 0">↓</span>
-              {{ Math.abs(coin.change) }}%
+              <span v-if="coin.change > 0">+</span>
+              {{ coin.change }}%
             </span>
           </td>
+          <td class="right volume">{{ coin.volume }}</td>
+          <td class="right market-cap">{{ coin.marketCap }}</td>
         </tr>
       </tbody>
     </table>
+    </div>
   </div>
 </template>
 
@@ -75,54 +99,59 @@ export default {
         name: 'Bitcoin',
         symbol: 'BTC',
         icon: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
-        price: '$37,000',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=BTC',
+        price: '$97,234',
         change: 2.5,
+        volume: '$45.2B',
+        marketCap: '$1.92T',
       },
       {
         name: 'Ethereum',
         symbol: 'ETH',
         icon: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
-        price: '$2,000',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=ETH',
+        price: '$3,689',
         change: -1.2,
+        volume: '$28.5B',
+        marketCap: '$443.6B',
       },
       {
         name: 'Tether',
         symbol: 'USDT',
         icon: 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
         price: '$1.00',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=USDT',
         change: 0.01,
+        volume: '$89.3B',
+        marketCap: '$139.8B',
       },
       {
         name: 'XRP',
         symbol: 'XRP',
         icon: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
-        price: '$0.62',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=XRP',
+        price: '$2.42',
         change: 1.5,
+        volume: '$12.8B',
+        marketCap: '$138.5B',
       },
       {
         name: 'BNB',
         symbol: 'BNB',
         icon: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png',
-        price: '$250',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=BNB',
+        price: '$702',
         change: 0.8,
+        volume: '$2.1B',
+        marketCap: '$101.2B',
       },
       {
         name: 'Solana',
         symbol: 'SOL',
         icon: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
-        price: '$55',
-        chart: 'https://dummyimage.com/60x20/eee/aaa.png?text=SOL',
-        change: 0.0,
+        price: '$242',
+        change: 3.2,
+        volume: '$6.7B',
+        marketCap: '$116.8B',
       },
     ]);
 
     const search = ref('');
-    // 用 symbol 做 key 存星标状态
     const starred = ref({});
 
     const filteredCoins = computed(() => {
@@ -132,7 +161,7 @@ export default {
         (coin) =>
           coin.name.toLowerCase().includes(s) ||
           coin.symbol.toLowerCase().includes(s)
-      );           
+      );
     });
 
     function toggleStar(symbol) {
@@ -140,7 +169,7 @@ export default {
     }
 
     function onImgError(e) {
-      e.target.src = 'https://dummyimage.com/36x36/eee/aaa.png?text=?';
+      e.target.src = 'https://dummyimage.com/40x40/eee/aaa.png?text=?';
     }
 
     return {
@@ -156,412 +185,357 @@ export default {
 </script>
 
 <style scoped>
-
-.custom-table-card {
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 32px 0 rgba(60,60,60,0.10);
-  padding: 32px 32px 24px 32px;
-  margin: 48px auto 0 auto;
-  max-width: 950px;
+.explore-container {
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
   box-sizing: border-box;
 }
 
-/* 整个表格骨架 */
-.crypto-table {
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  padding: 60px 0 48px 0;
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  color: #64748b;
+  margin: 0 0 32px 0;
+  font-weight: 400;
+}
+
+/* Search Container */
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+.search-box {
+  position: relative;
   width: 100%;
-  border-collapse: collapse;    /* 真正紧凑表格 */
-  border-spacing: 0;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  font-size: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
 }
 
-
-/* 表头 */
-.crypto-table thead th {
-  text-align: left;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-  padding: 0 12px 10px 12px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+.search-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
+.search-input::placeholder {
+  color: #94a3b8;
+}
 
-/* 单元格 */
-.crypto-table tbody td {
-  font-size: 14px;
+/* Market Section */
+.market-section {
+  margin-top: 24px;
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-icon {
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
   color: #0f172a;
-  padding: 10px 12px;
-  height: 48px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+/* Table */
+.crypto-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
   background: transparent;
 }
 
-
-
-/* 最后一行可去掉底边线（可选） */
-.crypto-table tbody tr:last-child td {
-  border-bottom: none;
+/* Table Header */
+.crypto-table thead th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: #64748b;
+  padding: 0 20px 12px 20px;
+  border: none;
+  background: transparent;
 }
 
-
-/* 行 hover：轻量背景高亮 */
-.crypto-table tbody tr:hover td {
-  background: rgba(129, 140, 248, 0.06);
+/* Table Body Row */
+.crypto-table tbody tr {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Table Body Cells */
+.crypto-table tbody td {
+  font-size: 16px;
+  color: #0f172a;
+  padding: 24px 20px;
+  border: none;
+  background: transparent;
+}
 
-/* 左中右对齐工具类 */
-.left   { text-align: left; }
-.right  { text-align: right; }
-.center { text-align: center; }
+/* First and Last Cell Radius */
+.crypto-table tbody td:first-child {
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
 
+.crypto-table tbody td:last-child {
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
 
-/* 星标列 + 序号列 */
-.star-header,
-.star-cell {
-  width: 36px;
+/* Row Hover Effect */
+.crypto-table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+/* Alignment */
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
+.center {
   text-align: center;
 }
 
-.index-header,
-.index-cell {
+/* Star Column */
+.star-header,
+.star-cell {
   width: 40px;
-  text-align: right;
-  font-size: 12px;
-  color: #9ca3af;
-  font-weight: 500;
+  text-align: center;
 }
 
-/* 星标 icon */
 .star {
-  font-size: 16px;
-  color: #cbd5f5;
+  font-size: 18px;
+  color: #cbd5e1;
   cursor: pointer;
   user-select: none;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
+}
+
+.star:hover {
+  color: #94a3b8;
 }
 
 .star.active {
   color: #fbbf24;
 }
 
+/* Index Column */
+.index-header,
+.index-cell {
+  width: 60px;
+  text-align: left;
+  font-size: 15px;
+  color: #94a3b8;
+  font-weight: 500;
+}
 
-/* Token 名称部分 */
+/* Token Name Cell */
 .name-cell {
+  width: 35%;
+}
+
+.token-content {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 200px;
+  gap: 16px;
 }
 
 .icon-wrap {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   overflow: hidden;
-  background: #f3f4f6;
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .icon {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .name-info {
   display: flex;
   flex-direction: column;
+  gap: 4px;
   min-width: 0;
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
   color: #0f172a;
+  line-height: 1.3;
 }
 
 .symbol {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 2px;
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.3;
 }
 
-
-
-/* 数值列：价格 / 涨跌 / 交易量 / 市值 */
+/* Price Column */
 .price {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  width: 16%;
 }
 
+/* Change Column */
 .change {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .change.up {
-  color: #16a34a;
+  color: #10b981;
 }
 
 .change.down {
-  color: #dc2626;
+  color: #ef4444;
 }
 
-/* 小图表（如果要保留的话） */
-.chart {
-  width: 72px;
-  height: 24px;
-  display: block;
-  margin: 0 auto;
-  border-radius: 4px;
-  background: #f3f4f6;
+/* Volume and Market Cap */
+.volume,
+.market-cap {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: #475569;
+  width: 16%;
 }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+  .explore-container {
+    padding: 0 16px;
+  }
 
-/* .up {
-  color: #16c784;
-  background: #e6f9f0;
-}
-.down {
-  color: #ea3943;
-  background: #fdeaea;
-}
-.left {
-  text-align: left;
-}
-.right {
-  text-align: right;
-}
-.center {
-  text-align: center;
-}
-.star-header, .star-cell {
-  width: 36px;
-  text-align: center;
-}
-.index-header, .index-cell {
-  width: 32px;
-  text-align: center;
-  color: #888;
-  font-weight: 600;
-}
-.star {
-  font-size: 20px;
-  color: #bfc5d2;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s;
-}
-.star.active {
-  color: #f7b500;
-  text-shadow: 0 1px 4px #ffe06644;
-} */
+  .hero-section {
+    padding: 40px 0 32px 0;
+  }
 
-/* 响应式简单压缩 */
-@media (max-width: 600px) {
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-subtitle {
+    font-size: 16px;
+  }
+
+  .search-container {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
   .crypto-table thead th {
-    font-size: 11px;
-    padding: 0 6px 8px 6px;
+    font-size: 10px;
+    padding: 12px 8px;
   }
 
   .crypto-table tbody td {
     font-size: 13px;
-    padding: 8px 6px;
+    padding: 12px 8px;
   }
 
-  .name-cell {
+  .token-content {
     gap: 8px;
   }
 
   .icon-wrap {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
   }
 
   .icon {
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
   }
 
-  .chart {
-    width: 56px;
-    height: 20px;
+  .name {
+    font-size: 14px;
   }
-}
 
-.table-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-  margin-left: 8px;
-  margin-top: 32px;
-}
+  .symbol {
+    font-size: 12px;
+  }
 
-.toolbar-title {
-  font-size: 22px;
-  font-weight: bold;
-  color: #3f7df3;
-  letter-spacing: 0.5px;
-}
-
-.toolbar-search {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1.5px solid #bfc5d2;
-  border-radius: 12px;
-  padding: 6px 14px;
-  min-width: 180px;
-  transition: border 0.2s;
-}
-
-.toolbar-search:focus-within {
-  border-color: #3f7df3;
-}
-
-.search-icon {
-  font-size: 18px;
-  color: #222;
-  margin-right: 6px;
-}
-
-.search-input {
-  border: none;
-  outline: none;
-  font-size: 15px;
-  background: transparent;
-  color: #222;
-  width: 100px;
-}
-
-.crypto-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 12px;
-  background: #fff;
-  font-family: 'Inter', Arial, sans-serif;
-}
-.crypto-table th {
-  color: #888;
-  font-weight: 600;
-  font-size: 15px;
-  background: #fff;
-  border: none;
-  padding-bottom: 10px;
-}
-.crypto-table td {
-  background: #fff;
-  border: none;
-  font-size: 16px;
-  padding: 18px 8px;
-  vertical-align: middle;
-}
-.name-cell {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 160px;
-}
-.icon-wrap {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #f5f5f5;
-  object-fit: contain;
-  display: block;
-}
-.name-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.name {
-  font-weight: bold;
-  font-size: 16px;
-  color: #222;
-  word-break: break-all;
-}
-.symbol {
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 2px;
-}
-.price {
-  font-family: 'Menlo', monospace;
-  font-weight: 500;
-}
-.chart {
-  width: 60px;
-  height: 20px;
-  display: block;
-  margin: 0 auto;
-}
-.change {
-  font-weight: bold;
-  font-size: 15px;
-}
-.up {
-  color: #16c784;
-}
-.down {
-  color: #ea3943;
-}
-.left {
-  text-align: left;
-}
-.right {
-  text-align: right;
-}
-.center {
-  text-align: center;
-}
-tbody tr {
-  box-shadow: 0 2px 8px 0 rgba(60,60,60,0.04);
-  border-radius: 12px;
-  transition: box-shadow 0.2s;
-}
-tbody tr:hover {
-  box-shadow: 0 4px 16px 0 rgba(60,60,60,0.10);
-}
-.star-header, .star-cell {
-  width: 36px;
-  text-align: center;
-}
-.index-header, .index-cell {
-  width: 32px;
-  text-align: center;
-  color: #888;
-  font-weight: 600;
-}
-.star {
-  font-size: 20px;
-  color: #bfc5d2;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s;
-}
-.star.active {
-  color: #f7b500;
-  text-shadow: 0 1px 4px #ffe06644;
+  /* Hide volume and market cap on small screens */
+  .crypto-table thead th:nth-child(6),
+  .crypto-table thead th:nth-child(7),
+  .crypto-table tbody td:nth-child(6),
+  .crypto-table tbody td:nth-child(7) {
+    display: none;
+  }
 }
 </style>
