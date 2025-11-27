@@ -27,47 +27,63 @@
         <!-- Asset -->
         <div class="asset-card" @click="goPortfolio">
           <div class="asset-content">
-            <div class="asset-info">
-              <h3 class="asset-title">My Asset</h3>
-              <div class="asset-stats">
-                <div class="stat-row">
-                  <span class="stat-label">Total Value</span>
-                  <span class="stat-value">\${{ totalValue.toLocaleString() }}</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Total Return</span>
-                  <span class="stat-value" :class="returnPct >= 0 ? 'positive' : 'negative'">
-                    {{ returnPct >= 0 ? '+' : '' }}{{ returnPct }}%
-                  </span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Coins</span>
-                  <span class="stat-value">{{ coinCount }}</span>
-                </div>
+            <!-- ⭐ 加载中 -->
+            <template v-if="isLoading">
+              <div class="asset-loading">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-row"></div>
+                <div class="skeleton skeleton-row"></div>
+                <div class="skeleton skeleton-row"></div>
+                <div class="skeleton-circle"></div>
               </div>
-            </div>
+            </template>
 
-            <div class="asset-visual">
-              <div class="chart-placeholder">
-                <svg width="120" height="120" viewBox="0 0 120 120">
-                  <!-- TODO: Return real 收益百分比 -->
-                  <circle cx="60" cy="60" r="50" fill="none" stroke="#e9e6fb" stroke-width="20"/>
-                  <circle cx="60" cy="60" r="50" fill="none" stroke="#6c5dd3" stroke-width="20"
-                    :stroke-dasharray="circleCircumference"
-                    :stroke-dashoffset="chartOffset"
-                    transform="rotate(-90 60 60)"/>
-                </svg>
+            <!-- 加载完成显示真实内容 -->
+            <template v-else>
+                <div class="asset-info">
+                <h3 class="asset-title">My Asset</h3>
+                <div class="asset-stats">
+                  <div class="stat-row">
+                    <span class="stat-label">Total Value</span>
+                    <span class="stat-value">\${{ totalValue.toLocaleString() }}</span>
+                  </div>
+                  <div class="stat-row">
+                    <span class="stat-label">Total Return</span>
+                    <span class="stat-value" :class="returnPct >= 0 ? 'positive' : 'negative'">
+                      {{ returnPct >= 0 ? '+' : '' }}{{ returnPct }}%
+                    </span>
+                  </div>
+                  <div class="stat-row">
+                    <span class="stat-label">Coins</span>
+                    <span class="stat-value">{{ coinCount }}</span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div class="asset-action">
-              <div class="view-more-btn">
-                <span>View Portfolio </span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+              <div class="asset-visual">
+                <div class="chart-placeholder">
+                  <svg width="120" height="120" viewBox="0 0 120 120">
+                    <!-- TODO: Return real 收益百分比 -->
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#e9e6fb" stroke-width="20"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#6c5dd3" stroke-width="20"
+                      :stroke-dasharray="circleCircumference"
+                      :stroke-dashoffset="chartOffset"
+                      transform="rotate(-90 60 60)"/>
+                  </svg>
+                </div>
               </div>
-            </div>
+
+              <div class="asset-action">
+                <div class="view-more-btn">
+                  <span>View Portfolio </span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </template>
+
+            
           </div>
         </div>
 
@@ -131,13 +147,17 @@ import { useRouter } from 'vue-router'
 import LandingLayout from '@/views/Landing/LandingLayout.vue'
 import DisplayTable from '@/views/Market/DisplayTable.vue'
 import CashIcon from '@/assets/d.svg'
+import axios from 'axios'
+import { onMounted } from 'vue'
+
 
 const router = useRouter()
 
 // Sample data
-const totalValue = ref(12543.67)
-const returnPct = ref(15.3)
-const coinCount = ref(8)
+const totalValue = ref(0)
+const returnPct = ref(0)
+const coinCount = ref(0)
+const isLoading = ref(true)
 
 // 计算圆环进度
 const circleRadius = 50
@@ -146,6 +166,28 @@ const chartOffset = computed(() => {
   // 将百分比转换为 0-100 的范围
   const percentage = Math.min(Math.max(returnPct.value, 0), 100)
   return circleCircumference * (1 - percentage / 100)
+})
+
+// asset-card
+const fetchPortfolioSummary = async () => {
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/assetinfo`)
+
+    totalValue.value = res.data.data.totalValue
+    returnPct.value = res.data.data.returnPct
+    coinCount.value = res.data.data.coinCount
+
+    console.log('Portfolio summary loaded:', res.data)
+  } catch (err) {
+    console.error('Failed to load portfolio summary:', err)
+  } finally{
+    isLoading.value=false
+  }
+}
+
+// 页面加载自动调用
+onMounted(() => {
+  fetchPortfolioSummary()
 })
 
 const portfolioItems = ref([
@@ -740,4 +782,47 @@ const goMarket = () => {
     min-width: 600px;
   }
 }
+
+/* Skeleton Loading */
+.asset-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.skeleton {
+  background: #eee;
+  height: 20px;
+  border-radius: 8px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-title {
+  width: 40%;
+  height: 28px;
+}
+
+.skeleton-row {
+  width: 80%;
+  height: 20px;
+}
+
+.skeleton-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #eee;
+  margin-top: 12px;
+  align-self: center;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
 </style>

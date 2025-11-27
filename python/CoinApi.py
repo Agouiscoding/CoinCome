@@ -1,20 +1,23 @@
+# 每种货币每天的价格走势
+
 import requests, pandas as pd, time, random
 from datetime import datetime
+import os
 
 COIN_MAP = {
-    # 1: ("bitcoin", "BTC"),
+    1: ("bitcoin", "BTC"),
     2: ("ethereum", "ETH"),
-    # 3: ("tether", "USDT"),
-    # 4: ("solana", "SOL"),
-    # 5: ("cardano", "ADA"),
-    # 6: ("ripple", "XRP"),
-    # 7: ("dogecoin", "DOGE"),
-    # 8: ("binancecoin", "BNB"),
-    # 9: ("litecoin", "LTC"),
-    # 10: ("avalanche-2", "AVAX")
+    3: ("tether", "USDT"),
+    4: ("solana", "SOL"),
+    5: ("cardano", "ADA"),
+    6: ("ripple", "XRP"),
+    7: ("dogecoin", "DOGE"),
+    8: ("binancecoin", "BNB"),
+    9: ("litecoin", "LTC"),
+    10: ("avalanche-2", "AVAX")
 }
 
-DAYS = 30
+DAYS = 1
 frames = []
 
 def fetch_with_retry(url, params, symbol, max_retries=5):
@@ -49,11 +52,9 @@ for coin_id, (cg_id, symbol) in COIN_MAP.items():
     params = {"vs_currency": "usd", "days": DAYS}
 
     r = fetch_with_retry(url, params, symbol)
-    #print(cg_id)
 
     if not r:
         continue
-
 
     try:
         data = r.json()
@@ -75,17 +76,30 @@ for coin_id, (cg_id, symbol) in COIN_MAP.items():
     df["MarketDate"] = df["timestamp"].dt.date
     df["UpdatedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = df.dropna(subset=["Return"])
-    frames.append(df[["CoinID", "Price", "Return", "IntervalType", "MarketDate", "UpdatedAt"]])
+
+    #每种币保存在自己的csv文件里
+    #date_str=datetime.now().strftime("%Y-%m-%d")
+    folder_path=f"days/{symbol}"
+    os.makedirs(folder_path, exist_ok=True)
+
+    for _, row in df.iterrows():
+        date_str=str(row["MarketDate"])
+        filename = f"{folder_path}/{symbol}_{date_str}.csv"
+        row_df=pd.DataFrame([row])[["CoinID", "Price", "Return", "IntervalType", "MarketDate", "UpdatedAt"]]
+        row_df.to_csv(filename,index=False)
+        print(f"\n✅ Done! Saved to {filename}")
 
     # 额外加点随机延迟（1~3秒），更像人类访问
     time.sleep(random.uniform(1.0, 3.0))
 
 # === 合并并保存 ===
-if frames:
-    result = pd.concat(frames, ignore_index=True)
-    filename = f"marketdata_mysql_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
-    result.to_csv(filename, index=False)
-    print(f"\n✅ Done! Saved to {filename}")
-    print(result.head())
-else:
-    print("⚠️ No data fetched at all.")
+# if frames:
+#     # 创建文件夹（如果不存在）
+#     os.makedirs("7-days", exist_ok=True)
+#     result = pd.concat(frames, ignore_index=True)
+#     filename = f"7-days/marketdata_mysql_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+#     result.to_csv(filename, index=False)
+#     print(f"\n✅ Done! Saved to {filename}")
+#     print(result.head())
+# else:
+#     print("⚠️ No data fetched at all.")
