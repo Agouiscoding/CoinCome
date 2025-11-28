@@ -8,7 +8,7 @@ import lombok.Data;
 import java.sql.Timestamp;
 
 @Data
-@TableName("Coin")
+@TableName(value = "`Coin`")
 public class Coin {
     @TableId("CoinID")
     private Integer coinId;
@@ -16,8 +16,11 @@ public class Coin {
     @TableField("CoinName")
     private String coinName;
 
-    @TableField("Cg_id")
+    @TableField(value = "Cg_id")
     private String cgId;
+
+    @TableField(value = "CoinType")
+    private String coinType;
 
     @TableField("UpdatedAt")
     private Timestamp updatedAt;

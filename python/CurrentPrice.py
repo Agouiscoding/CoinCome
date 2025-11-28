@@ -39,3 +39,5 @@ if __name__ == "__main__":
     price = fetch_price(cg_id)
 
     print(json.dumps({"price": price}))
+
+

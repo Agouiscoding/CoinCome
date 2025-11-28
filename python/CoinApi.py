@@ -17,7 +17,7 @@ COIN_MAP = {
     10: ("avalanche-2", "AVAX")
 }
 
-DAYS = 1
+DAYS = 7
 frames = []
 
 def fetch_with_retry(url, params, symbol, max_retries=5):
@@ -74,32 +74,30 @@ for coin_id, (cg_id, symbol) in COIN_MAP.items():
     df["Return"] = df["Price"].pct_change()
     df["IntervalType"] = "daily"
     df["MarketDate"] = df["timestamp"].dt.date
-    df["UpdatedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #df["UpdatedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = df.dropna(subset=["Return"])
 
     #每种币保存在自己的csv文件里
-    #date_str=datetime.now().strftime("%Y-%m-%d")
-    folder_path=f"days/{symbol}"
+    folder_path = "days"
     os.makedirs(folder_path, exist_ok=True)
-
-    for _, row in df.iterrows():
-        date_str=str(row["MarketDate"])
-        filename = f"{folder_path}/{symbol}_{date_str}.csv"
-        row_df=pd.DataFrame([row])[["CoinID", "Price", "Return", "IntervalType", "MarketDate", "UpdatedAt"]]
-        row_df.to_csv(filename,index=False)
-        print(f"\n✅ Done! Saved to {filename}")
-
+    file_path = f"{folder_path}/{symbol}.csv"
+    # 只保留需要的列
+    new_df = df[["CoinID", "Price", "Return", "IntervalType", "MarketDate"]].copy()
+    # 如果旧文件存在，先读出来
+    if os.path.exists(file_path):
+        try:
+            old_df = pd.read_csv(file_path, parse_dates=["MarketDate"])
+        except Exception as e:
+            print(f"⚠️ Failed to read {file_path}, recreating. Error: {e}")
+            old_df = pd.DataFrame()
+    else:
+        old_df = pd.DataFrame()
+    # 合并旧 + 新
+    merged = pd.concat([old_df, new_df], ignore_index=True)
+    # 按 MarketDate 去重（保留最新的）
+    merged = merged.sort_values("MarketDate").drop_duplicates(subset=["MarketDate"], keep="last")
+    # 保存
+    merged.to_csv(file_path, index=False)
+    print(f"📁 Updated file: {file_path} ({len(new_df)} new rows)")
     # 额外加点随机延迟（1~3秒），更像人类访问
     time.sleep(random.uniform(1.0, 3.0))
-
-# === 合并并保存 ===
-# if frames:
-#     # 创建文件夹（如果不存在）
-#     os.makedirs("7-days", exist_ok=True)
-#     result = pd.concat(frames, ignore_index=True)
-#     filename = f"7-days/marketdata_mysql_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
-#     result.to_csv(filename, index=False)
-#     print(f"\n✅ Done! Saved to {filename}")
-#     print(result.head())
-# else:
-#     print("⚠️ No data fetched at all.")
