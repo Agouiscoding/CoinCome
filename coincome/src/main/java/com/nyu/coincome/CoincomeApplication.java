@@ -5,8 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
 import java.util.TimeZone;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 
 @SpringBootApplication
@@ -20,6 +22,7 @@ public class CoincomeApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CoincomeApplication.class, args);
+
     }
 }
 

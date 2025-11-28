@@ -3,8 +3,10 @@
 spring:
   datasource:
     # 重点：这里连的是本地 3307 端口（SSH 隧道），不是远程内网 IP
+
     #url: jdbc:mysql://localhost:3307/bitcome?useSSL=false&serverTimezone=UTC&allowLoadLocalInfile=true
     url: jdbc:mysql://localhost:3307/bitcome?useSSL=false&allowLoadLocalInfile=true&connectionTimeZone=America/New_York&forceConnectionTimeZoneToSession=true
+
     username: yixin_leng              # 你的 MySQL 用户
     password: YxLeng%2025^Lm3  # 你的 MySQL 密码
     driver-class-name: com.mysql.cj.jdbc.Driver

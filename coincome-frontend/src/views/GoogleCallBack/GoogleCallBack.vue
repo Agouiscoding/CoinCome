@@ -4,29 +4,27 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { loginWithGoogle } from '@/api/user'   // 👈 新增
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 onMounted(async () => {
-
   const code = route.query.code
   if (!code) return
 
   try {
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
-      code
-    })
+    const res = await loginWithGoogle(code)
 
     if (res.data.code === 1) {
-      const user = res.data.data.user     // 你的后端返回结构
+      const user = res.data.data.user
       const token = res.data.data.token
 
       userStore.setUser(user, token)
+      console.log('Google Login successful:', user)
 
       router.push('/dashboard')
     } else {
@@ -37,3 +35,4 @@ onMounted(async () => {
   }
 })
 </script>
+

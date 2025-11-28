@@ -147,8 +147,8 @@ import { useRouter } from 'vue-router'
 import LandingLayout from '@/views/Landing/LandingLayout.vue'
 import DisplayTable from '@/views/Market/DisplayTable.vue'
 import CashIcon from '@/assets/d.svg'
-import axios from 'axios'
 import { onMounted } from 'vue'
+import { fetchAssetInfo } from '@/api/user'
 
 
 const router = useRouter()
@@ -171,7 +171,7 @@ const chartOffset = computed(() => {
 // asset-card
 const fetchPortfolioSummary = async () => {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/assetinfo`)
+    const res = await fetchAssetInfo()
 
     totalValue.value = res.data.data.totalValue
     returnPct.value = res.data.data.returnPct

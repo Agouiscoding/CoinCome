@@ -54,9 +54,9 @@
 
 <script setup>
 import { ref } from "vue"
-import axios from "axios"
 import { ElMessage } from "element-plus"
 import { useRouter } from "vue-router"
+import { checkUsernameApi, registerUser } from '@/api/user'
 
 defineProps({ visible: Boolean })
 
@@ -72,9 +72,7 @@ const checkUsername = async () => {
     if (!username.value) return
 
     try {
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/check-username`, {
-            username: username.value
-        })
+        const res = await checkUsernameApi(username.value)
         usernameExists.value = res.data.data === true
     } catch (err) {
         console.error(err)
@@ -89,15 +87,15 @@ const handleSignup = async () => {
     }
 
     try {
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
-            username: username.value,
-            email: email.value,
-            passwordHash: password.value
-        })
+        const res = await registerUser({
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    })
 
         if (res.data.code === 1) {
             ElMessage.success("Account created successfully!")
-            router.push("/signin")
+            router.push("/landing")
         } else {
             ElMessage.error(res.data.msg)
         }

@@ -66,6 +66,7 @@ public class UserController {
     public Result signin(@RequestBody SigninRequest req){
         log.info("Sign in request：username={}, password={}", req.getUsername(), req.getPassword());
         Users user = userService.signin(req.getUsername(), req.getPassword());
+        Integer isAdmin;
         if (user == null) {
             return Result.error("Invalid username or password.");
         }
@@ -77,6 +78,8 @@ public class UserController {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setCreatedAt(user.getCreatedAt());
+        isAdmin=userService.isAdmin(user.getUserId());
+        dto.setIsAdmin(isAdmin);
 
         // userDTO + token 返回前端
         Map<String, Object> result = new HashMap<>();
