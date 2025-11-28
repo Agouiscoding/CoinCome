@@ -131,7 +131,8 @@
 import { ref } from "vue"
 import { useUserStore } from '@/stores/user'
 import LandingLayout from '@/views/Landing/LandingLayout.vue'
-import axios from "axios"
+import { fetchUserExchangeList, uploadTransaction } from '@/api/csvUpload'
+
 
 const userStore = useUserStore()
 const fileInput = ref(null)
@@ -148,7 +149,7 @@ const selectedExchange = ref("")
 // Load exchange list on page mount
 async function loadExchangeList() {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/exchangelist`)
+    const res = await fetchUserExchangeList()
     exchangeList.value = res.data.data
   } catch (err) {
     console.error("Failed to load exchanges", err)
@@ -197,16 +198,7 @@ async function uploadFile(file) {
   formData.append("note", noteText.value)
 
   try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/user/upload`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${userStore.token}`,
-        },
-      }
-    )
+    const res = await uploadTransaction(formData)
 
     if (res.data.code !== 1) {
       throw new Error(res.data.msg || "Upload failed")

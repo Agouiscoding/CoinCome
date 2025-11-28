@@ -47,10 +47,10 @@
 
 <script setup>
 import { ref, defineProps } from 'vue'
-import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { loginWithPassword } from '@/api/user' 
 
 defineProps({ visible: Boolean })
 
@@ -66,10 +66,7 @@ const handleSignin = async () => {
     return
   }
   try {
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/signin`, {
-      username: username.value,
-      password: password.value
-    })
+    const res = await loginWithPassword(username.value, password.value)
     if (res.data.code === 1) {
       const user = res.data.data.user
       const token = res.data.data.token
