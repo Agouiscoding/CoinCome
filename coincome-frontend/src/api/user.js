@@ -1,3 +1,5 @@
+
+
 // src/api/user.js
 import http from './http'
 
@@ -37,4 +39,19 @@ export function registerUser({ username, email, password }) {
 //个人资产页面
 export function getOverall() {
   return http.get('/api/user/holdings')
+}
+
+//个人资产exchange部分
+export function getExchangePage(){
+  return http.get('/api/user/byExchange')
+}
+
+//市场板块数据
+export function getMarketData(){
+  return http.get('/api/user/marketinfo')
+}
+
+//市场detail部分
+export function getDetail(){
+  return http.get('/api/user/hoursPicture')
 }

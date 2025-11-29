@@ -60,16 +60,18 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { getExchangePage } from '@/api/user'
+import { onMounted } from 'vue'
 
 const exchangeHoldings = ref([
-  { exchange: 'Binance', coin: 'BTC', quantity: 1.2, costBasis: 8000, currentPrice: 8750, yield: 9.4 },
-  { exchange: 'Binance', coin: 'ETH', quantity: 5, costBasis: 7000, currentPrice: 7500, yield: 7.1 },
-  { exchange: 'Binance', coin: 'XRP', quantity: 2000, costBasis: 1200, currentPrice: 1400, yield: 16.7 },
-  { exchange: 'Binance', coin: 'ADA', quantity: 3500, costBasis: 2100, currentPrice: 1890, yield: -10.0 },
-  { exchange: 'Coinbase', coin: 'SOL', quantity: 20, costBasis: 3200, currentPrice: 3750, yield: 17.2 },
-  { exchange: 'Coinbase', coin: 'DOGE', quantity: 10000, costBasis: 3000, currentPrice: 3750, yield: 25.0 },
-  { exchange: 'Coinbase', coin: 'DOT', quantity: 150, costBasis: 900, currentPrice: 1050, yield: 16.7 },
-  { exchange: 'Coinbase', coin: 'MATIC', quantity: 800, costBasis: 640, currentPrice: 720, yield: 12.5 }
+  // { exchange: 'Binance', coin: 'BTC', quantity: 1.2, costBasis: 8000, currentPrice: 8750, yield: 9.4 },
+  // { exchange: 'Binance', coin: 'ETH', quantity: 5, costBasis: 7000, currentPrice: 7500, yield: 7.1 },
+  // { exchange: 'Binance', coin: 'XRP', quantity: 2000, costBasis: 1200, currentPrice: 1400, yield: 16.7 },
+  // { exchange: 'Binance', coin: 'ADA', quantity: 3500, costBasis: 2100, currentPrice: 1890, yield: -10.0 },
+  // { exchange: 'Coinbase', coin: 'SOL', quantity: 20, costBasis: 3200, currentPrice: 3750, yield: 17.2 },
+  // { exchange: 'Coinbase', coin: 'DOGE', quantity: 10000, costBasis: 3000, currentPrice: 3750, yield: 25.0 },
+  // { exchange: 'Coinbase', coin: 'DOT', quantity: 150, costBasis: 900, currentPrice: 1050, yield: 16.7 },
+  // { exchange: 'Coinbase', coin: 'MATIC', quantity: 800, costBasis: 640, currentPrice: 720, yield: 12.5 }
 ])
 
 const coinColors = {
@@ -89,6 +91,20 @@ const getCoinColor = (coin) => {
 
 const exchangeCount = computed(() => {
   return new Set(exchangeHoldings.value.map(h => h.exchange)).size
+})
+
+// 从后端获取数据
+const getExchanges = async () => {
+  try {
+    const res = await getExchangePage()
+    exchangeHoldings.value=res.data.data
+  } catch (err) {
+    console.error('Failed to load', err)
+  }
+}
+// 页面加载自动调用
+onMounted(() => {
+  getExchanges()
 })
 </script>
 
