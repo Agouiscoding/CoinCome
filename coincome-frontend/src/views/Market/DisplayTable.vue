@@ -8,8 +8,8 @@
           <th class="left">Token</th>
           <th class="right">Price</th>
           <th class="right">24h Change</th>
-          <th class="right">24h Volume</th>
-          <th class="right market-cap-header">
+          <th class="right">Type</th>
+          <!-- <th class="right market-cap-header">
             <div class="header-with-time">
               <span>Market Cap</span>
               <span class="updated-at">
@@ -20,16 +20,19 @@
                 {{ formattedUpdateTime }}
               </span>
             </div>
+          </th> -->
+           <th class="right">
+            Last Updated: {{ formattedUpdateTime }}
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(coin, idx) in filteredCoins" :key="coin.symbol" class="table-row" @click="goToDetail(coin.symbol)">
+        <tr v-for="(coin, idx) in filteredCoins" :key="coin.coinId" class="table-row" @click="goToDetail(coin.coinName)">
           <td v-if="showStar" class="star-cell">
             <span
               class="star"
               :class="{ active: starred[coin.symbol] }"
-              @click.stop="toggleStar(coin.symbol)"
+              @click.stop="toggleStar(coin.coinName)"
               title="Favorite"
             >
               {{ starred[coin.symbol] ? '★' : '☆' }}
@@ -40,27 +43,29 @@
             <div class="token-content">
               <div class="icon-wrap">
                 <img
-                  :src="coin.icon"
-                  :alt="coin.name"
+                  :src="makeIcon(coin.coinName)"
+                  :alt="coin.coinName"
                   class="icon"
                   @error="onImgError($event)"
                 />
               </div>
               <div class="name-info">
-                <span class="name">{{ coin.name }}</span>
-                <span class="symbol">{{ coin.symbol }}</span>
+                <span class="name">{{ coin.cgId }}</span>
+                <span class="symbol">{{ coin.coinName }}</span>
               </div>
             </div>
           </td>
-          <td class="right price">{{ coin.price }}</td>
+          <td class="right price">{{ coin.price.toLocaleString() }}</td>
           <td class="right">
             <span :class="['change', coin.change > 0 ? 'up' : coin.change < 0 ? 'down' : '']">
               <span v-if="coin.change > 0">+</span>
               {{ coin.change }}%
             </span>
           </td>
-          <td class="right volume">{{ coin.volume }}</td>
-          <td class="right market-cap">{{ coin.marketCap }}</td>
+          <!-- <td class="right volume">{{ coin.volume }}</td>
+          <td class="right market-cap">{{ coin.marketCap }}</td> -->
+          <td class="right">{{ coin.coinType }}</td>
+          <td class="right">{{ coin.updatedAt }}</td>
         </tr>
       </tbody>
     </table>
@@ -70,6 +75,8 @@
 <script>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue'
+import { getMarketData } from '@/api/user'
 
 export default {
   name: 'DisplayTable',
@@ -91,64 +98,92 @@ export default {
     const router = useRouter();
 
     const coins = ref([
-      {
-        name: 'Bitcoin',
-        symbol: 'BTC',
-        icon: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
-        price: '$97,234',
-        change: 2.5,
-        volume: '$45.2B',
-        marketCap: '$1.92T',
-      },
-      {
-        name: 'Ethereum',
-        symbol: 'ETH',
-        icon: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
-        price: '$3,689',
-        change: -1.2,
-        volume: '$28.5B',
-        marketCap: '$443.6B',
-      },
-      {
-        name: 'Tether',
-        symbol: 'USDT',
-        icon: 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
-        price: '$1.00',
-        change: 0.01,
-        volume: '$89.3B',
-        marketCap: '$139.8B',
-      },
-      {
-        name: 'XRP',
-        symbol: 'XRP',
-        icon: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
-        price: '$2.42',
-        change: 1.5,
-        volume: '$12.8B',
-        marketCap: '$138.5B',
-      },
-      {
-        name: 'BNB',
-        symbol: 'BNB',
-        icon: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png',
-        price: '$702',
-        change: 0.8,
-        volume: '$2.1B',
-        marketCap: '$101.2B',
-      },
-      {
-        name: 'Solana',
-        symbol: 'SOL',
-        icon: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
-        price: '$242',
-        change: 3.2,
-        volume: '$6.7B',
-        marketCap: '$116.8B',
-      },
+      // {
+      //   name: 'Bitcoin',
+      //   symbol: 'BTC',
+      //   icon: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+      //   price: '$97,234',
+      //   change: 2.5,
+      //   volume: '$45.2B',
+      //   marketCap: '$1.92T',
+      // },
+      // {
+      //   name: 'Ethereum',
+      //   symbol: 'ETH',
+      //   icon: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+      //   price: '$3,689',
+      //   change: -1.2,
+      //   volume: '$28.5B',
+      //   marketCap: '$443.6B',
+      // },
+      // {
+      //   name: 'Tether',
+      //   symbol: 'USDT',
+      //   icon: 'https://assets.coingecko.com/coins/images/325/large/Tether.png',
+      //   price: '$1.00',
+      //   change: 0.01,
+      //   volume: '$89.3B',
+      //   marketCap: '$139.8B',
+      // },
+      // {
+      //   name: 'XRP',
+      //   symbol: 'XRP',
+      //   icon: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png',
+      //   price: '$2.42',
+      //   change: 1.5,
+      //   volume: '$12.8B',
+      //   marketCap: '$138.5B',
+      // },
+      // {
+      //   name: 'BNB',
+      //   symbol: 'BNB',
+      //   icon: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png',
+      //   price: '$702',
+      //   change: 0.8,
+      //   volume: '$2.1B',
+      //   marketCap: '$101.2B',
+      // },
+      // {
+      //   name: 'Solana',
+      //   symbol: 'SOL',
+      //   icon: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
+      //   price: '$242',
+      //   change: 3.2,
+      //   volume: '$6.7B',
+      //   marketCap: '$116.8B',
+      // },
     ]);
 
     const starred = ref({});
     const updatedAt = ref(new Date());
+    const icons = import.meta.glob('@/assets/*.png', { eager: true });
+    function makeIcon(coinName) {
+      // return `https://assets.coingecko.com/coins/images/1/large/${cgId}.png`;
+      const key = `/src/assets/${coinName}.png`
+      return icons[key]?.default || 'https://dummyimage.com/64x64/eee/aaa.png?text=?'
+    }
+    // --------------------------
+    // Fetch backend data
+    // --------------------------
+    async function fetchData() {
+      try {
+        const res = await getMarketData()
+        coins.value = res.data.data;
+        // 找这一批数据里最新 updatedAt
+        // const latest = Math.max(
+        //   ...coins.value.map((c) => new Date(c.updatedAt).getTime())
+        // );
+        // updatedAt.value = new Date(latest);
+      } catch (e) {
+        console.error('Fetch market failed', e);
+      }
+    }
+     // 初次加载
+    onMounted(() => {
+      fetchData();
+      // 每 3 分钟刷新一次
+      setInterval(fetchData, 180000);
+    });
 
     const formattedUpdateTime = computed(() => {
       const date = updatedAt.value;
@@ -195,6 +230,7 @@ export default {
     }
 
     return {
+      coins,
       showStar: props.showStar,
       starred,
       filteredCoins,
@@ -202,6 +238,7 @@ export default {
       onImgError,
       goToDetail,
       formattedUpdateTime,
+      makeIcon,
     };
   },
 };

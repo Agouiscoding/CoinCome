@@ -115,9 +115,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LandingLayout from '@/views/Landing/LandingLayout.vue'
+import { getDetail } from '@/api/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,69 +126,105 @@ const router = useRouter()
 const loading = ref(true)
 const symbol = ref(route.params.symbol?.toUpperCase() || 'BTC')
 
-// Coin basic info (you can fetch this from API too)
-const coinInfo = {
-  BTC: { name: 'Bitcoin', icon: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
-  ETH: { name: 'Ethereum', icon: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
-  USDT: { name: 'Tether', icon: 'https://assets.coingecko.com/coins/images/325/large/Tether.png' },
-  XRP: { name: 'XRP', icon: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png' },
-  BNB: { name: 'BNB', icon: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
-  SOL: { name: 'Solana', icon: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
-  DOGE: { name: 'Dogecoin', icon: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png' },
-  ADA: { name: 'Cardano', icon: 'https://assets.coingecko.com/coins/images/975/large/cardano.png' },
-  AVAX: { name: 'Avalanche', icon: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
-  LTC: { name: 'Litecoin', icon: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png' },
+// 后端返回的数据
+// const coinInfo = {
+//   BTC: { name: 'Bitcoin', icon: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
+//   ETH: { name: 'Ethereum', icon: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
+//   USDT: { name: 'Tether', icon: 'https://assets.coingecko.com/coins/images/325/large/Tether.png' },
+//   XRP: { name: 'XRP', icon: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png' },
+//   BNB: { name: 'BNB', icon: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
+//   SOL: { name: 'Solana', icon: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+//   DOGE: { name: 'Dogecoin', icon: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png' },
+//   ADA: { name: 'Cardano', icon: 'https://assets.coingecko.com/coins/images/975/large/cardano.png' },
+//   AVAX: { name: 'Avalanche', icon: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
+//   LTC: { name: 'Litecoin', icon: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png' },
+// }
+const timeData = ref([])
+const icons = import.meta.glob('@/assets/*.png', { eager: true });
+function getIcon(symbol) {
+  const key = `/src/assets/${symbol}.png`
+  return icons[key]?.default || 'https://dummyimage.com/64x64/eee/aaa.png?text=?'
 }
-
 const coinData = computed(() => ({
+  // symbol: symbol.value,
+  // name: coinInfo[symbol.value]?.name || symbol.value,
+  // icon: coinInfo[symbol.value]?.icon || 'https://dummyimage.com/64x64/eee/aaa.png?text=?'
   symbol: symbol.value,
-  name: coinInfo[symbol.value]?.name || symbol.value,
-  icon: coinInfo[symbol.value]?.icon || 'https://dummyimage.com/64x64/eee/aaa.png?text=?'
+  name: symbol.value,
+  icon: getIcon(symbol.value)
 }))
 
 // Price data from API (48 hours of prices)
 const priceData = ref([])
 
+//请求后端数据
+async function loadPriceData(){
+  loading.value=true
+  try{
+    const res=await getDetail()
+    const allData=res.data.data
+    const matched=allData.find(item=>item.symbol===symbol.value)
+    priceData.value=matched?.prices||[]
+    timeData.value=matched?.markettime||[]
+    coinData.value = {
+      symbol: matched?.symbol || symbol.value,
+      name: matched?.name || symbol.value,
+      icon: getIcon(symbol.value) || 'https://dummyimage.com/64x64/eee/aaa.png?text=?'
+    }
+  } catch(e){
+    console.error("Failed to fetch price data:",e)
+  }
+  loading.value=false
+}
 // Mock data for now - replace with actual API call
 onMounted(async () => {
-  loading.value = true
-
+  //loading.value = true
+  loadPriceData()
   // TODO: Replace with actual API call
   // const res = await fetchCoinPrices(symbol.value)
   // priceData.value = res.data.data.prices
 
   // Mock 48 data points (one per hour for 48 hours)
-  const mockPrices = generateMockPrices(symbol.value, 48)
-  priceData.value = mockPrices
+  // const mockPrices = generateMockPrices(symbol.value, 48)
+  // priceData.value = mockPrices
 
-  loading.value = false
+  // loading.value = false
 })
 
+// 当路由 symbol 改变时重新加载
+watch(
+  () => route.params.symbol,
+  (newVal) => {
+    symbol.value = newVal?.toUpperCase() || 'BTC'
+    loadPriceData()
+  }
+)
+
 // Generate mock price data based on coin
-function generateMockPrices(sym, count) {
-  const basePrices = {
-    BTC: 97000,
-    ETH: 3600,
-    USDT: 1,
-    XRP: 2.4,
-    BNB: 700,
-    SOL: 240,
-    DOGE: 0.38,
-    ADA: 0.95,
-    AVAX: 42,
-    LTC: 108
-  }
+// function generateMockPrices(sym, count) {
+//   const basePrices = {
+//     BTC: 97000,
+//     ETH: 3600,
+//     USDT: 1,
+//     XRP: 2.4,
+//     BNB: 700,
+//     SOL: 240,
+//     DOGE: 0.38,
+//     ADA: 0.95,
+//     AVAX: 42,
+//     LTC: 108
+//   }
 
-  const base = basePrices[sym] || 100
-  const prices = []
+//   const base = basePrices[sym] || 100
+//   const prices = []
 
-  for (let i = 0; i < count; i++) {
-    const variance = (Math.random() - 0.5) * base * 0.05  // 5% variance
-    prices.push(base + variance)
-  }
+//   for (let i = 0; i < count; i++) {
+//     const variance = (Math.random() - 0.5) * base * 0.05  // 5% variance
+//     prices.push(base + variance)
+//   }
 
-  return prices
-}
+//   return prices
+// }
 
 // Computed values
 const currentPrice = computed(() => {
@@ -221,70 +258,136 @@ const avg24h = computed(() => {
   return last24.reduce((a, b) => a + b, 0) / last24.length
 })
 
-// Chart calculations
+// Chart calculations，修改，基于时间计算横轴位置
 const chartPoints = computed(() => {
-  if (priceData.value.length === 0) return []
-
+  // if (priceData.value.length === 0) return []
+  if (!priceData.value.length || !timeData.value.length) return []
+  
+  //++++++++++++
+  const chartLeft = 60
+  const chartRight = 760
+  const chartWidth = chartRight - chartLeft
+  // 转成时间戳
+  const timestamps = timeData.value.map(t => new Date(t).getTime())
+  const minT = Math.min(...timestamps)
+  const maxT = Math.max(...timestamps)
+  const rangeT = maxT - minT || 1
   const prices = priceData.value
-  const minPrice = Math.min(...prices)
-  const maxPrice = Math.max(...prices)
-  const range = maxPrice - minPrice || 1
+  const minP = Math.min(...prices)
+  const maxP = Math.max(...prices)
+  const rangeP = maxP - minP || 1
+  const top = 40
+  const bottom = 240
+  const height = bottom - top
+  return prices.map((p, i) => {
+    const t = timestamps[i]
+    const x = chartLeft + ((t - minT) / rangeT) * chartWidth
+    const y = bottom - ((p - minP) / rangeP) * height
+    return { x, y }
+  })
+  
+  
+  // const prices = priceData.value
+  // const minPrice = Math.min(...prices)
+  // const maxPrice = Math.max(...prices)
+  // const range = maxPrice - minPrice || 1
 
-  const chartWidth = 700  // 760 - 60 (left margin)
-  const chartHeight = 200 // 240 - 40 (top margin)
+  // const chartWidth = 700  // 760 - 60 (left margin)
+  // const chartHeight = 200 // 240 - 40 (top margin)
 
-  return prices.map((price, index) => ({
-    x: 60 + (index / (prices.length - 1)) * chartWidth,
-    y: 40 + chartHeight - ((price - minPrice) / range) * chartHeight
-  }))
+  // return prices.map((price, index) => ({
+  //   x: 60 + (index / (prices.length - 1)) * chartWidth,
+  //   y: 40 + chartHeight - ((price - minPrice) / range) * chartHeight
+  // }))
 })
 
 const linePoints = computed(() => {
-  return chartPoints.value.map(p => `${p.x},${p.y}`).join(' ')
+  // return chartPoints.value.map(p => `${p.x},${p.y}`).join(' ')
+  chartPoints.value.map(p => `${p.x},${p.y}`).join(' ')
 })
 
 const areaPath = computed(() => {
-  const points = chartPoints.value
-  if (points.length === 0) return ''
+  // const points = chartPoints.value
+  // if (points.length === 0) return ''
 
-  let path = `M ${points[0].x} 240 L ${points[0].x} ${points[0].y}`
-  points.forEach(p => {
+  // let path = `M ${points[0].x} 240 L ${points[0].x} ${points[0].y}`
+  // points.forEach(p => {
+  //   path += ` L ${p.x} ${p.y}`
+  // })
+  // path += ` L ${points[points.length - 1].x} 240 Z`
+  // return path
+  if (!chartPoints.value.length) return ''
+
+  let path = `M ${chartPoints.value[0].x} 240`
+  chartPoints.value.forEach(p => {
     path += ` L ${p.x} ${p.y}`
   })
-  path += ` L ${points[points.length - 1].x} 240 Z`
+  path += ` L ${chartPoints.value[chartPoints.value.length - 1].x} 240 Z`
   return path
 })
 
+// Y 轴：显示 5 个区间
 const yAxisLabels = computed(() => {
-  if (priceData.value.length === 0) return []
+  // if (priceData.value.length === 0) return []
 
-  const minPrice = Math.min(...priceData.value)
-  const maxPrice = Math.max(...priceData.value)
-  const step = (maxPrice - minPrice) / 4
+  // const minPrice = Math.min(...priceData.value)
+  // const maxPrice = Math.max(...priceData.value)
+  // const step = (maxPrice - minPrice) / 4
 
-  return [0, 1, 2, 3, 4].map(i => formatPrice(maxPrice - i * step))
+  // return [0, 1, 2, 3, 4].map(i => formatPrice(maxPrice - i * step))
+   if (!priceData.value.length) return []
+  const minP = Math.min(...priceData.value)
+  const maxP = Math.max(...priceData.value)
+  const step = (maxP - minP) / 4
+  return [0, 1, 2, 3, 4].map(i => formatPrice(maxP - i * step))
 })
 
+// X 轴：自动从时间里提取
 const xAxisLabels = computed(() => {
   // Show labels for -48h, -36h, -24h, -12h, Now
+  // return [
+  //   { x: 60, text: '-48h' },
+  //   { x: 235, text: '-36h' },
+  //   { x: 410, text: '-24h' },
+  //   { x: 585, text: '-12h' },
+  //   { x: 760, text: 'Now' }
+  // ]
+  if (!timeData.value.length) return []
+  const timestamps = timeData.value.map(t => new Date(t).getTime())
+  const minT = Math.min(...timestamps)
+  const maxT = Math.max(...timestamps)
+  const chartLeft = 60
+  const chartRight = 760
+  const chartWidth = chartRight - chartLeft
+  function posOf(t) {
+    return chartLeft + ((t - minT) / (maxT - minT)) * chartWidth
+  }
+  const first = timeData.value[0]
+  const mid = timeData.value[Math.floor(timeData.value.length / 2)]
+  const last = timeData.value[timeData.value.length - 1]
+  function fmt(s) {
+    return s.slice(11, 16)  // HH:mm
+  }
   return [
-    { x: 60, text: '-48h' },
-    { x: 235, text: '-36h' },
-    { x: 410, text: '-24h' },
-    { x: 585, text: '-12h' },
-    { x: 760, text: 'Now' }
+    { x: posOf(new Date(first).getTime()), text: fmt(first) },
+    { x: posOf(new Date(mid).getTime()), text: fmt(mid) },
+    { x: posOf(new Date(last).getTime()), text: fmt(last) }
   ]
 })
 
 // Helpers
 function formatPrice(price) {
-  if (price >= 1000) {
-    return '$' + price.toLocaleString(undefined, { maximumFractionDigits: 0 })
-  } else if (price >= 1) {
-    return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  } else {
-    return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })
-  }
+  // if (price >= 1000) {
+  //   return '$' + price.toLocaleString(undefined, { maximumFractionDigits: 0 })
+  // } else if (price >= 1) {
+  //   return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  // } else {
+  //   return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })
+  // }
+  if (price == null) return '--'
+  if (price >= 1000) return '$' + price.toLocaleString(undefined, { maximumFractionDigits: 0 })
+  if (price >= 1) return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 2 })
+  return '$' + price.toLocaleString(undefined, { minimumFractionDigits: 4 })
 }
 
 function onImgError(e) {

@@ -44,6 +44,8 @@ public class UserController {
     @Autowired
     private UsersMapper usersMapper;
     @Autowired
+    private AssetMapper assetMapper;
+    @Autowired
     private CoinMapper coinMapper;
     @Autowired
     private ExchangeMapper exchangeMapper;
@@ -672,7 +674,55 @@ public class UserController {
         return "High";
     }
 
+    @GetMapping("/byExchange")
+    public Result byExchange(HttpServletRequest request) {
+        // 从 Token 中获取 userId
+        Users currentUser = (Users) request.getAttribute("currentUser");
+        if (currentUser == null) {
+            return Result.error("Invalid token");
+        }
+        Integer userId = currentUser.getUserId();
+        //根据userId查找用户的asset表
+        List<Asset> list = assetMapper.findAllAsset(userId);
+        if (list == null || list.isEmpty()) {
+            return Result.success(Collections.emptyMap());
+        }
 
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        for (Asset a : list) {
+            //查找交易所的名字
+            Exchange ex = exchangeMapper.selectById(a.getExchangeId());
+            //查找币的名字
+            Coin coin = coinMapper.selectById(a.getCoinId());
+            //查找当前价格
+            Double cp = marketDataMapper.getprice(a.getCoinId());
+            BigDecimal currentPrice = BigDecimal.valueOf(cp == null ? 0 : cp);
+            //计算值
+            BigDecimal qty = a.getQuantity();
+            BigDecimal avgCost = a.getAvgCost();
+
+            BigDecimal costBasis = qty.multiply(avgCost);
+            BigDecimal currentValue = qty.multiply(currentPrice);
+
+            double yieldPct = 0;
+            if (costBasis.compareTo(BigDecimal.ZERO) > 0) {
+                yieldPct = currentValue.subtract(costBasis)
+                        .divide(costBasis, 6, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .doubleValue();
+            }
+            Map<String, Object> item = new HashMap<>();
+            item.put("exchange",ex.getExchangeName());
+            item.put("coin",coin.getCoinName());
+            item.put("quantity", qty);
+            item.put("costBasis", costBasis);
+            item.put("currentPrice", currentValue);
+            item.put("yield", yieldPct);
+            resultList.add(item);
+        }
+        return Result.success(resultList);
+    }
 
 
 
