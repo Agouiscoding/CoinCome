@@ -10,11 +10,13 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class JwtFilter implements Filter {
 
@@ -36,8 +38,9 @@ public class JwtFilter implements Filter {
         // 不需要 Token 的接口放行
         if (url.contains("/signin") ||
                 url.contains("/google") ||
-                url.contains("//check-username") ||
-                url.contains("/register")) {
+                url.contains("/check-username") ||
+                url.contains("/register"))
+        {
             chain.doFilter(request, response);
             return;
         }
@@ -67,6 +70,7 @@ public class JwtFilter implements Filter {
             chain.doFilter(request, response);
 
         } catch (Exception e) {
+            log.error("e: ", e);
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             resp.getWriter().write("Invalid or expired token");
         }

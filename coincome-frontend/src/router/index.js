@@ -9,7 +9,8 @@ import Portfolio from '@/views/Portfolio/Portfolio.vue'
 import OverallHoldings from '@/views/Portfolio/OverallHoldings/OverallHoldings.vue'
 import ByExchange from '@/views/Portfolio/ByExchange/ByExchange.vue'
 import Recommended from '@/views/Portfolio/Recommended/Recommended.vue'
-import AdminDashboard from '@/views/Dashboard/AdminDashboard.vue'   // 👈 新增
+import AdminDashboard from '@/views/Dashboard/AdminDashboard.vue'   
+import Transactions from '@/views/Transactions/Transactions.vue'  
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +66,14 @@ const router = createRouter({
       path: '/portfolio',
       name: 'portfolio',
       component: Portfolio,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/transactions',
+      name: 'transactions',
+      component: Transactions,
       meta: {
         requiresAuth: true
       }

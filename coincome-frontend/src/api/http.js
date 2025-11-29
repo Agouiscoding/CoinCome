@@ -68,18 +68,19 @@ http.interceptors.response.use(
 
       case 401: {
         // 未登录 / 登录过期
-        const userStore = useUserStore()
+        // const userStore = useUserStore()
+        console.warn('401 from server:', error.config.url)
 
-        // 清理本地状态
-        userStore.logout()
+        // // 清理本地状态
+        // userStore.logout()
 
-        ElMessage.error(backendMsg || '登录已过期，请重新登录')
+        // ElMessage.error(backendMsg || '登录已过期，请重新登录')
 
-        // 跳转到登录/首页（避免死循环：如果已经在 landing 就不用跳）
-        if (router.currentRoute.value.name !== 'landing') {
-          router.push({ name: 'landing' })
-        }
-        break
+        // // 跳转到登录/首页（避免死循环：如果已经在 landing 就不用跳）
+        // if (router.currentRoute.value.name !== 'landing') {
+        //   router.push({ name: 'landing' })
+        // }
+        // break
       }
 
       case 403:
