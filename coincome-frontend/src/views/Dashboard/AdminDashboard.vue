@@ -149,6 +149,29 @@
               <span v-if="coinSuccess" class="success-text">{{ coinSuccess }}</span>
             </div>
           </form>
+          <!-- ⭐ 批量导入 JSON 按钮 -->
+          <div class="import-section">
+            <button
+              class="secondary-btn"
+              type="button"
+              @click="triggerJsonSelect"
+              :disabled="importingJson"
+            >
+              <span v-if="!importingJson">Import Coins from JSON</span>
+              <span v-else>Importing...</span>
+            </button>
+
+            <input
+              ref="jsonInput"
+              type="file"
+              accept=".json,application/json"
+              style="display: none"
+              @change="handleJsonSelected"
+            />
+
+            <span v-if="importError" class="error-text">{{ importError }}</span>
+            <span v-if="importSuccess" class="success-text">{{ importSuccess }}</span>
+          </div>
 
           <!-- 币种列表 -->
           <div class="list-header">
@@ -193,7 +216,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import AdminLayout from '@/views/Dashboard/AdminLayout.vue'
-import { fetchExchanges, addExchange, fetchCoins, addCoin } from '@/api/admin'
+import { fetchExchanges, addExchange, fetchCoins, addCoin, importCoinsFromJson } from '@/api/admin'
 
 // 交易所相关 state
 const exchanges = ref([])
@@ -216,6 +239,55 @@ const coinForm = ref({
   name: '',
   type: '',
 })
+
+// ⭐ JSON 导入相关 state
+const jsonInput = ref(null)
+const importingJson = ref(false)
+const importError = ref(null)
+const importSuccess = ref(null)
+
+// 点击按钮，打开文件选择框
+const triggerJsonSelect = () => {
+  importError.value = null
+  importSuccess.value = null
+  if (jsonInput.value) {
+    jsonInput.value.value = ''   // 清空之前的选择
+    jsonInput.value.click()
+  }
+}
+
+// 选择完文件后的处理
+const handleJsonSelected = async (e) => {
+  const file = e.target.files && e.target.files[0]
+  if (!file) return
+
+  importingJson.value = true
+  importError.value = null
+  importSuccess.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    await importCoinsFromJson(formData)   // 调后端导入接口
+    importSuccess.value = 'Coins imported successfully'
+
+    // 重新拉一遍币种列表
+    await loadCoins()
+  } catch (err) {
+    console.error('Import coins from JSON failed', err)
+    importError.value =
+      err?.response?.data?.msg ||
+      err?.response?.data?.message ||
+      'Import failed'
+  } finally {
+    importingJson.value = false
+    setTimeout(() => {
+      importError.value = null
+      importSuccess.value = null
+    }, 3000)
+  }
+}
 
 // 工具：格式化日期时间（简单版）
 const formatDateTime = (val) => {
@@ -354,9 +426,10 @@ onMounted(() => {
 /* 两列卡片布局 */
 .cards-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;  /* 不再左右两列，而是一列 */
   gap: 24px;
 }
+
 
 /* 通用卡片 */
 .card {
@@ -568,4 +641,37 @@ onMounted(() => {
     padding: 0 16px 40px 16px;
   }
 }
+
+.import-section {
+  margin: 8px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 次级按钮 */
+.secondary-btn {
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.secondary-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 </style>

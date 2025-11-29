@@ -10,6 +10,4 @@ public interface UserService {
 
     //Sign up function
     Users signup(String username, String email, String rawPassword);
-
-    Integer isAdmin(int userId);
 }

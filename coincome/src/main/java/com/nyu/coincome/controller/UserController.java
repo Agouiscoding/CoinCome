@@ -6,6 +6,7 @@ import com.nyu.coincome.entity.dto.MarketInfo;
 import com.nyu.coincome.entity.dto.SigninRequest;
 import com.nyu.coincome.entity.dto.UserDTO;
 import com.nyu.coincome.mapper.*;
+import com.nyu.coincome.service.AdminService;
 import com.nyu.coincome.service.UserService;
 import com.nyu.coincome.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +60,8 @@ public class UserController {
     private JwtUtil jwtUtil;
     @Autowired
     private MarketDataMapper marketDataMapper;
+    @Autowired
+    private AdminService adminService;
 
 
     //sign in function
@@ -78,7 +81,7 @@ public class UserController {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setCreatedAt(user.getCreatedAt());
-        isAdmin=userService.isAdmin(user.getUserId());
+        isAdmin= adminService.isAdmin(user.getUserId()) ? 1 : 0;
         dto.setIsAdmin(isAdmin);
 
         // userDTO + token 返回前端

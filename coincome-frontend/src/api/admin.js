@@ -22,3 +22,12 @@ export function addCoin(payload) {
   // payload: { coinName, coinType }
   return http.post('/api/admin/coins', payload)
 }
+
+
+export function importCoinsFromJson(formData) {
+  return http.post('/api/admin/coin/import-json-file', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}

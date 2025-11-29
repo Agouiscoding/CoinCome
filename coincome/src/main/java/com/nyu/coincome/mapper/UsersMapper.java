@@ -14,7 +14,5 @@ public interface UsersMapper extends BaseMapper<Users> {
     @Select("SELECT * FROM Users WHERE Username = #{username}")
     Users findByUsername(String username);
 
-    @Select("SELECT COUNT(1) FROM Admin WHERE UserId = #{userId}")
-    int isAdmin(int userId);
 
 }

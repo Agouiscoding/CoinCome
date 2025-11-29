@@ -8,7 +8,7 @@ const API_BASE = import.meta.env.VITE_API_URL
 
 const http = axios.create({
   baseURL: API_BASE,
-  timeout: 10000,
+  timeout: 1000000000,
 })
 
 // 请求拦截器：统一加 token（按你项目实际情况调整）

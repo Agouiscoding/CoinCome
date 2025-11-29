@@ -30,11 +30,6 @@ public class UserServiceImpl implements UserService{
         return user; // sign in success
     }
 
-    @Override
-    public Integer isAdmin(int userId) {
-        return usersMapper.isAdmin(userId);
-    }
-
     //log in or sign up with google
     @Override
     public Users loginWithGoogle(String email, String name) {
