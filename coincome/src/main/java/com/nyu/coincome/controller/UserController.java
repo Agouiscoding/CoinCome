@@ -577,6 +577,7 @@ public class UserController {
         if(list==null||list.isEmpty()){
             return Result.success(Collections.emptyMap());
         }
+        log.info(list.toString());
         // 需要返回的三个整体数据
         BigDecimal totalValue = BigDecimal.ZERO;  //总收益
         BigDecimal totalCost = BigDecimal.ZERO;    //总成本

@@ -1,5 +1,11 @@
 <template>
   <section class="content-section">
+    <div v-if="isLoading" style="margin-bottom: 12px; color:#64748b;">
+    Loading recommended portfolios...
+    </div>
+    <div v-else-if="loadError" style="margin-bottom: 12px; color:#ef4444;">
+      {{ loadError }}
+    </div>
     <!-- Optimization Summary -->
     <div class="optimization-banner">
       <div class="banner-left">
@@ -127,8 +133,10 @@
   </section>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<!-- <script setup>
+ import { ref, computed, onMounted } from 'vue'
+ import { fetchRecommendedPortfolios } from '@/api/portfolio'
+
 
 const coinGradients = [
   'linear-gradient(135deg, #6366f1, #818cf8)',
@@ -147,58 +155,116 @@ const getCoinGradient = (index) => coinGradients[index % coinGradients.length]
 const selectedRisk = ref('moderate')
 
 const riskLevels = [
-  { id: 'low', label: 'Low' },
-  { id: 'moderate', label: 'Medium' },
-  { id: 'high', label: 'High' }
+  { id: 'Conservative', label: 'Conservative' },
+  { id: 'Neutral', label: 'Neutral' },
+  { id: 'Aggressive', label: 'Aggressive' }
 ]
 
 // Different recommendations for each risk level
-const recommendations = {
-  low: {
-    description: 'Lower risk approach focusing on stable assets and capital preservation',
-    expectedReturn: 8.5,
-    sharpeRatio: 0.85,
-    data: [
-      { coin: 'BTC', current: 30, target: 40, action: 'Buy +10%', currentValue: 7500, targetValue: 10000, actionAmount: 2500, currentPrice: 67500 },
-      { coin: 'ETH', current: 22, target: 30, action: 'Buy +8%', currentValue: 5500, targetValue: 7500, actionAmount: 2000, currentPrice: 3650 },
-      { coin: 'SOL', current: 12, target: 10, action: 'Sell -2%', currentValue: 3000, targetValue: 2500, actionAmount: 500, currentPrice: 185 },
-      { coin: 'DOGE', current: 10, target: 5, action: 'Sell -5%', currentValue: 2500, targetValue: 1250, actionAmount: 1250, currentPrice: 0.38 },
-      { coin: 'XRP', current: 10, target: 8, action: 'Sell -2%', currentValue: 2500, targetValue: 2000, actionAmount: 500, currentPrice: 2.15 },
-      { coin: 'ADA', current: 8, target: 5, action: 'Sell -3%', currentValue: 2000, targetValue: 1250, actionAmount: 750, currentPrice: 0.95 },
-      { coin: 'DOT', current: 8, target: 2, action: 'Sell -6%', currentValue: 2000, targetValue: 500, actionAmount: 1500, currentPrice: 7.80 }
-    ]
-  },
-  moderate: {
-    description: 'Based on Markowitz Modern Portfolio Theory for optimal risk-adjusted returns',
-    expectedReturn: 13.0,
-    sharpeRatio: 1.15,
-    data: [
-      { coin: 'BTC', current: 30, target: 25, action: 'Sell -5%', currentValue: 7500, targetValue: 6250, actionAmount: 1250, currentPrice: 67500 },
-      { coin: 'ETH', current: 22, target: 20, action: 'Sell -2%', currentValue: 5500, targetValue: 5000, actionAmount: 500, currentPrice: 3650 },
-      { coin: 'SOL', current: 12, target: 15, action: 'Buy +3%', currentValue: 3000, targetValue: 3750, actionAmount: 750, currentPrice: 185 },
-      { coin: 'DOGE', current: 10, target: 10, action: 'Hold', currentValue: 2500, targetValue: 2500, actionAmount: 0, currentPrice: 0.38 },
-      { coin: 'XRP', current: 10, target: 12, action: 'Buy +2%', currentValue: 2500, targetValue: 3000, actionAmount: 500, currentPrice: 2.15 },
-      { coin: 'ADA', current: 8, target: 10, action: 'Buy +2%', currentValue: 2000, targetValue: 2500, actionAmount: 500, currentPrice: 0.95 },
-      { coin: 'DOT', current: 8, target: 8, action: 'Hold', currentValue: 2000, targetValue: 2000, actionAmount: 0, currentPrice: 7.80 }
-    ]
-  },
-  high: {
-    description: 'High growth potential with increased volatility exposure',
-    expectedReturn: 22.5,
-    sharpeRatio: 1.45,
-    data: [
-      { coin: 'BTC', current: 30, target: 15, action: 'Sell -15%', currentValue: 7500, targetValue: 3750, actionAmount: 3750, currentPrice: 67500 },
-      { coin: 'ETH', current: 22, target: 15, action: 'Sell -7%', currentValue: 5500, targetValue: 3750, actionAmount: 1750, currentPrice: 3650 },
-      { coin: 'SOL', current: 12, target: 25, action: 'Buy +13%', currentValue: 3000, targetValue: 6250, actionAmount: 3250, currentPrice: 185 },
-      { coin: 'DOGE', current: 10, target: 15, action: 'Buy +5%', currentValue: 2500, targetValue: 3750, actionAmount: 1250, currentPrice: 0.38 },
-      { coin: 'XRP', current: 10, target: 12, action: 'Buy +2%', currentValue: 2500, targetValue: 3000, actionAmount: 500, currentPrice: 2.15 },
-      { coin: 'ADA', current: 8, target: 10, action: 'Buy +2%', currentValue: 2000, targetValue: 2500, actionAmount: 500, currentPrice: 0.95 },
-      { coin: 'DOT', current: 8, target: 8, action: 'Hold', currentValue: 2000, targetValue: 2000, actionAmount: 0, currentPrice: 7.80 }
-    ]
+
+const recommendations = ref({
+  Conservative: null,
+  Neutral: null,
+  Aggressive: null
+})
+
+const isLoading = ref(false)
+const loadError = ref('')
+
+const loadRecommendations = async () => {
+  try {
+    isLoading.value = true
+    loadError.value = ''
+
+    const res = await fetchRecommendedPortfolios()
+    const list = res.data.data || []   // 后端 Result.success(list)
+
+    const map = {
+      Conservative: null,
+      Neutral: null,
+      Aggressive: null
+    }
+
+    list.forEach(p => {
+      // p 就是 UserPortfolioDTO
+      // {
+      //   portId, userId, riskLevel, optimizationDate,
+      //   targetReturn, targetRisk, note, weights: [...]
+      // }
+
+      const key = riskKeyMap[p.riskLevel] || 'moderate'
+
+      // 期望收益：把小数变成百分比（你可以按实际情况调）
+      const expectedReturnPct = p.targetReturn != null
+        ? Number((p.targetReturn * 100).toFixed(1))
+        : 0
+
+      // Sharpe：简单 targetReturn / targetRisk（如果你有更精准的就按你自己的）
+      let sharpe = null
+      if (p.targetRisk && p.targetRisk !== 0) {
+        sharpe = Number((p.targetReturn / p.targetRisk).toFixed(2))
+      }
+
+      // 把 weights 映射成前端这张表要的 data
+      const rows = (p.weights || []).map(w => ({
+        // w: PortfolioCoinWeightDTO { coinId, coinSymbol, weight }
+        coin: w.coinSymbol,
+        // 现在只有 target 权重，当前持仓/金额在别的接口，你后面可以来补
+        current: 0,                                   // 暂时先填 0 或从别的接口拿
+        target: Number((w.weight * 100).toFixed(1)),  // 0~1 -> 百分比
+        action: 'Rebalance',                          // 以后可以根据 current vs target 动态算 Buy/Sell/Hold
+        currentValue: null,
+        targetValue: null,
+        actionAmount: null,
+        currentPrice: null
+      }))
+
+      map[key] = {
+        description: p.note || defaultDesc[key],
+        expectedReturn: expectedReturnPct,
+        sharpeRatio: sharpe,
+        data: rows
+      }
+    })
+
+    recommendations.value = map
+  } catch (err) {
+    console.error('Failed to load portfolios:', err)
+    loadError.value = err?.response?.data?.msg || err?.message || 'Failed to load recommendations'
+  } finally {
+    isLoading.value = false
   }
 }
 
-const currentRecommendation = computed(() => recommendations[selectedRisk.value])
+onMounted(() => {
+  loadRecommendations()
+})
+
+
+const riskKeyMap = {
+  Conservative: 'Conservative',
+  Neutral: 'Neutral',
+  Aggressive: 'Aggressive'
+}
+
+
+const defaultDesc = {
+  Conservative: 'Lower risk approach focusing on stable assets and capital preservation',
+  Neutral: 'Based on Markowitz Modern Portfolio Theory for optimal risk-adjusted returns',
+  Aggressive: 'High growth potential with increased volatility exposure'
+}
+
+
+const currentRecommendation = computed(() => {
+  const data = recommendations.value[selectedRisk.value]
+  return data || {
+    description: '',
+    expectedReturn: 0,
+    sharpeRatio: 0,
+    data: []
+  }
+})
+
 
 // Expanded coin state
 const expandedCoin = ref(null)
@@ -212,6 +278,223 @@ const getActionClass = (action) => {
   if (action.includes('Buy')) return 'buy'
   return 'hold'
 }
+</script> -->
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { fetchRecommendedPortfolios } from '@/api/portfolio'
+import { getOverall } from '@/api/user'   // ⭐ 新增：拿 holdings 的接口
+
+// =====================
+// UI 小工具：颜色、展开状态
+// =====================
+const coinGradients = [
+  'linear-gradient(135deg, #6366f1, #818cf8)',
+  'linear-gradient(135deg, #10b981, #34d399)',
+  'linear-gradient(135deg, #f59e0b, #fbbf24)',
+  'linear-gradient(135deg, #ec4899, #f472b6)',
+  'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+  'linear-gradient(135deg, #06b6d4, #22d3ee)',
+  'linear-gradient(135deg, #f97316, #fb923c)',
+  'linear-gradient(135deg, #14b8a6, #2dd4bf)'
+]
+
+const getCoinGradient = (index) => coinGradients[index % coinGradients.length]
+
+const expandedCoin = ref(null)
+const toggleExpand = (coin) => {
+  expandedCoin.value = expandedCoin.value === coin ? null : coin
+}
+
+const getActionClass = (action) => {
+  if (action.includes('Sell')) return 'sell'
+  if (action.includes('Buy')) return 'buy'
+  return 'hold'
+}
+
+// =====================
+// 风险等级选择（这块你可以按自己之前统一好的 key 来）
+// =====================
+const selectedRisk = ref('Neutral')
+
+const riskLevels = [
+  { id: 'Conservative', label: 'Conservative' },
+  { id: 'Neutral', label: 'Neutral' },
+  { id: 'Aggressive', label: 'Aggressive' }
+]
+
+// 推荐结果：按风险等级存
+const recommendations = ref({
+  Conservative: null,
+  Neutral: null,
+  Aggressive: null
+})
+
+const riskKeyMap = {
+  Conservative: 'Conservative',
+  Neutral: 'Neutral',
+  Aggressive: 'Aggressive'
+}
+
+// 默认描述
+const defaultDesc = {
+  Conservative: 'Lower risk approach focusing on stable assets and capital preservation',
+  Neutral: 'Based on Markowitz Modern Portfolio Theory for optimal risk-adjusted returns',
+  Aggressive: 'High growth potential with increased volatility exposure'
+}
+
+// 当前选中的推荐
+const currentRecommendation = computed(() => {
+  const data = recommendations.value[selectedRisk.value]
+  return data || {
+    description: '',
+    expectedReturn: 0,
+    sharpeRatio: 0,
+    data: []
+  }
+})
+
+// =====================
+// ⭐ 新增：整体持仓数据（来自第二个组件的接口）
+// =====================
+const totalValue = ref(0)    // 组合总市值
+const holdings = ref([])     // [{ symbol, fullName, amount, value, percentage }, ...]
+
+const holdingsMap = computed(() => {
+  const map = {}
+  holdings.value.forEach(h => {
+    // 这里用 symbol 做 key，保证和 p.weights 里的 coinSymbol 对得上
+    map[h.symbol] = h
+  })
+  return map
+})
+
+const loadOverallHoldings = async () => {
+  const res = await getOverall()
+  const data = res.data.data || {}
+
+  totalValue.value = data.totalValue || 0
+  holdings.value = Array.isArray(data.holdings) ? data.holdings : []
+}
+
+// =====================
+// 加载推荐组合，并且用 holdings 补全缺失字段
+// =====================
+const isLoading = ref(false)
+const loadError = ref('')
+
+const loadRecommendations = async () => {
+  try {
+    isLoading.value = true
+    loadError.value = ''
+
+    const res = await fetchRecommendedPortfolios()
+    const list = res.data.data || []
+
+    const map = {
+      Conservative: null,
+      Neutral: null,
+      Aggressive: null
+    }
+
+    list.forEach(p => {
+      // p: UserPortfolioDTO
+      const key = riskKeyMap[p.riskLevel] || 'Neutral'
+
+      // 期望收益（小数→百分比）
+      const expectedReturnPct = p.targetReturn != null
+        ? Number((p.targetReturn * 100).toFixed(1))
+        : 0
+
+      // Sharpe
+      let sharpe = null
+      if (p.targetRisk && p.targetRisk !== 0) {
+        sharpe = Number((p.targetReturn / p.targetRisk).toFixed(2))
+      }
+
+      // ⭐ 这里用 holdings 数据补全每一行
+      const rows = (p.weights || []).map(w => {
+        const symbol = w.coinSymbol
+        const h = holdingsMap.value[symbol]   // 当前持仓信息（可能不存在）
+
+        const targetPct = Number((w.weight * 100).toFixed(1))
+
+        // 当前权重（%）和市值
+        const currentPct = h ? Number(h.percentage.toFixed(1)) : 0
+        const currentValue = h ? Number(h.value.toFixed(2)) : null
+
+        // 目标市值：totalValue * target%
+        const tv = totalValue.value || 0
+        const targetValue = tv
+          ? Number((tv * targetPct / 100).toFixed(2))
+          : null
+
+        // 调整金额 = 目标市值 - 当前市值
+        let actionAmount = null
+        if (currentValue != null && targetValue != null) {
+          actionAmount = Number((targetValue - currentValue).toFixed(2))
+        }
+
+        // 当前价格 = value / amount
+        let currentPrice = null
+        if (h && h.amount && Number(h.amount) !== 0) {
+          currentPrice = Number((h.value / h.amount).toFixed(4))
+        }
+
+        // 动作：根据目标权重 - 当前权重
+        const diff = targetPct - currentPct
+        let action = 'Hold'
+
+        const THRESHOLD = 0.5  // 阈值，可调：小于 0.5% 差异当 Hold
+        if (diff > THRESHOLD) {
+          action = `Buy ${symbol}`
+        } else if (diff < -THRESHOLD) {
+          action = `Sell ${symbol}`
+        } else {
+          action = 'Rebalance'
+        }
+
+        return {
+          coin: symbol,
+          current: currentPct,
+          target: targetPct,
+          action,
+          currentValue,
+          targetValue,
+          actionAmount,
+          currentPrice
+        }
+      })
+
+      map[key] = {
+        description: p.note || defaultDesc[key],
+        expectedReturn: expectedReturnPct,
+        sharpeRatio: sharpe,
+        data: rows
+      }
+    })
+
+    recommendations.value = map
+  } catch (err) {
+    console.error('Failed to load portfolios:', err)
+    loadError.value =
+      err?.response?.data?.msg || err?.message || 'Failed to load recommendations'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// =====================
+// 生命周期：先拿整体持仓，再拿推荐（保证有 holdings）
+// =====================
+onMounted(async () => {
+  try {
+    await loadOverallHoldings()
+    await loadRecommendations()
+  } catch (e) {
+    console.error(e)
+  }
+})
 </script>
 
 <style scoped>
@@ -372,17 +655,17 @@ const getActionClass = (action) => {
   font-weight: 700;
 }
 
-.risk-btn.active.low {
+.risk-btn.active.conservative {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
-.risk-btn.active.moderate {
+.risk-btn.active.neutral {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
 }
 
-.risk-btn.active.high {
+.risk-btn.active.aggressive {
   background: linear-gradient(135deg, #f59e0b, #d97706);
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }

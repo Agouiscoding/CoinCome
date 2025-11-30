@@ -1,7 +1,6 @@
 package com.nyu.coincome.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.nyu.coincome.entity.Coin;
 import com.nyu.coincome.entity.MarketData;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
