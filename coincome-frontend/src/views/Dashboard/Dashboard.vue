@@ -101,7 +101,7 @@
         <DisplayTable search="" :limit="5" :show-star="false" />
       </section>
 
-      
+
       <!-- Investment Portfolio Section-->
       <section class="portfolio-section">
         <div class="section-header">
@@ -188,6 +188,7 @@ const fetchPortfolioSummary = async () => {
 onMounted(() => {
   fetchPortfolioSummary()
 })
+
 
 const portfolioItems = ref([
   {

@@ -87,7 +87,6 @@ const loginPasskey = () => {
 };
 
 const loginGoogle = () => {
-  // Initialize the Google OAuth2 client
   const client = google.accounts.oauth2.initCodeClient({
     client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
     scope: "openid email profile",
