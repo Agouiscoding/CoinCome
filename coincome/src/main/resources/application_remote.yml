@@ -1,0 +1,82 @@
+# src/main/resources/application.yml
+
+#spring:
+#  datasource:
+#    # 重点：这里连的是本地 3307 端口（SSH 隧道），不是远程内网 IP
+#
+#    #url: jdbc:mysql://localhost:3307/bitcome?useSSL=false&serverTimezone=UTC&allowLoadLocalInfile=true
+##    url: jdbc:mysql://localhost:3307/bitcome?useSSL=false&allowLoadLocalInfile=true&connectionTimeZone=America/New_York&forceConnectionTimeZoneToSession=true
+#    url: jdbc:mysql://10.0.1.116:3306/bitcome?useSSL=false&allowLoadLocalInfile=true&connectionTimeZone=America/New_York&forceConnectionTimeZoneToSession=true
+#
+#    username: agou              # 你的 MySQL 用户
+#    password: Aa121543912gzq! # 你的 MySQL 密码
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  # 文件上传设置（给 CSV 用）
+#  servlet:
+#    multipart:
+#      max-file-size: 50MB
+#      max-request-size: 50MB
+#
+#  jackson:
+#    date-format: yyyy-MM-dd HH:mm:ss
+#    time-zone: UTC
+#
+#file:
+#  upload-dir: /home/ubuntu/bitcome/uploads
+#
+#server:
+#  port: 8080   # 后端端口，前端就用 http://localh
+
+# application-prod.yml
+spring:
+  application:
+    name: coincome
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowLoadLocalInfile=true&connectionTimeZone=America/New_York&forceConnectionTimeZoneToSession=true&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jackson:
+    time-zone: America/New_York
+  mvc:
+    time-zone: America/New_York
+
+server:
+  forward-headers-strategy: framework
+
+coincome:
+  file:
+    upload-dir: ${FILE_UPLOAD_BASE_DIR}
+  python:
+    exec: ${PYTHON_EXEC}
+    script-dir: ${PYTHON_SCRIPT_DIR}
+    tmp-dir: ${PYTHON_TMP_DIR}
+
+
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # 如果你有自定义 XML（比如某些复杂查询），放在 resources/mapper 里
+  mapper-locations: classpath*:mapper/*.xml
+  # 实体类包路径（User、Asset、TransactionRecord 等）
+  type-aliases-package: com.nyu.coincome.entity
+  configuration:
+    map-underscore-to-camel-case: false
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印 SQL
+
+  global-config:
+    db-config:
+      id-type: auto           # 主键用数据库 AUTO_INCREMENT
+      table-underline: true   # 表字段下划线风格
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+logging:
+  level:
+    com.nyu.coincome.mapper: debug   # 打印 Mapper 的 SQL
+    com.baomidou.mybatisplus: debug
+
+
+
