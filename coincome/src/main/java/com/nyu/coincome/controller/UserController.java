@@ -150,6 +150,7 @@ public class UserController {
         }
         return hexString.toString();
     }
+
     @PostMapping("/upload")
     public Result upload(
             @RequestParam("file") MultipartFile file,

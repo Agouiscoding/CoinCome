@@ -32,5 +32,4 @@ public interface UsersMapper extends BaseMapper<Users> {
         """)
     List<AdminUserDTO> findAllWithAdminFlag();
 
-
 }
