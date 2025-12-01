@@ -410,5 +410,3 @@ Frontend: [http://localhost:5173](http://localhost:5173)
 4. Add a folder `upload/` under `CoinCome/coincome`
 
 ---
-
-都可以告诉我，我帮你生成！
